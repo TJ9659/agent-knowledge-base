@@ -1,0 +1,44 @@
+<form class="login" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="heading">
+    <h1>Sign in</h1>
+    <p>Use your Nexora work account.</p>
+  </div>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <div class="field">
+    <label for="email">Email</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      autocomplete="username"
+      [attr.aria-invalid]="showError('email')"
+      aria-describedby="email-hint"
+    />
+    @if (showError('email')) {
+      <p class="hint" id="email-hint">Enter a valid email address.</p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      autocomplete="current-password"
+      [attr.aria-invalid]="showError('password')"
+      aria-describedby="password-hint"
+    />
+    @if (showError('password')) {
+      <p class="hint" id="password-hint">Enter your password.</p>
+    }
+  </div>
+
+  <button type="submit" [disabled]="loading()">
+    {{ loading() ? 'Signing in…' : 'Sign in' }}
+  </button>
+</form>
