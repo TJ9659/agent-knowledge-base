@@ -2240,6 +2240,412 @@
           }
         }
       ]
+    },
+    {
+      "name": "Search and stats",
+      "item": [
+        {
+          "name": "Login as agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@nexora.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search articles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('has results', () => pm.expect(res.total).to.be.above(0));",
+                  "pm.test('only published', () => pm.expect(res.data.every((a) => a.status === 'PUBLISHED')).to.be.true);",
+                  "pm.test('best match first', () => pm.expect(res.data[0].title).to.eql('Handling a double charge'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=double charge",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "double charge"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search within a category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=charge&categoryId={{articleCategoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "charge"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "{{articleCategoryId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search with no matches",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('empty result', () => pm.expect(pm.response.json().total).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=xylophone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "xylophone"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Blank search lists everything",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search for a draft as agent finds nothing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('no drafts', () => pm.expect(pm.response.json().data.every((a) => a.status === 'PUBLISHED')).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=eSIM activation&status=DRAFT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "eSIM activation"
+                },
+                {
+                  "key": "status",
+                  "value": "DRAFT"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Category stats as agent (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stats/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@nexora.test\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search drafts as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('finds the draft', () => pm.expect(pm.response.json().data.some((a) => a.status === 'DRAFT')).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/articles?q=eSIM activation&status=DRAFT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "eSIM activation"
+                },
+                {
+                  "key": "status",
+                  "value": "DRAFT"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Category stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json();",
+                  "pm.test('total = published + drafts', () => rows.forEach((r) => pm.expect(r.total).to.eql(r.published + r.drafts)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stats/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "stats",
+                "categories"
+              ]
+            }
+          }
+        }
+      ]
     }
   ]
 }

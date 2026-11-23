@@ -35,16 +35,15 @@ async function getVisibleOrThrow(user: AuthUser, id: number) {
 }
 
 export const articleService = {
-  async list(user: AuthUser, { page, pageSize, categoryId, status }: ArticleListQuery) {
+  async list(user: AuthUser, { page, pageSize, q, categoryId, status }: ArticleListQuery) {
     // only admins can ask for drafts, everyone else gets published
     const statusFilter = user.role === 'ADMIN' ? (status === 'ALL' ? undefined : (status ?? 'PUBLISHED')) : 'PUBLISHED';
+    const filter = { status: statusFilter, categoryId, skip: (page - 1) * pageSize, take: pageSize };
 
-    const { rows, total } = await articleRepository.list({
-      status: statusFilter,
-      categoryId,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    });
+    // with q the results are ranked by relevance, without it newest first
+    const { rows, total } = q
+      ? await articleRepository.search({ ...filter, q })
+      : await articleRepository.list(filter);
     return { data: rows.map(toListItem), page, pageSize, total };
   },
 

@@ -19,10 +19,12 @@ export const updateArticleSchema = articleFields
   .partial()
   .refine((data) => Object.keys(data).length > 0, { message: 'Nothing to update' });
 
-// empty query values like ?categoryId= are treated as not sent
-const emptyToUndefined = (value: unknown) => (value === '' ? undefined : value);
+// empty or blank query values like ?q= are treated as not sent
+const emptyToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
 
 export const articleListQuerySchema = paginationQuerySchema.extend({
+  q: z.preprocess(emptyToUndefined, z.string().trim().max(200).optional()),
   categoryId: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
   status: z.preprocess(emptyToUndefined, z.enum(['DRAFT', 'PUBLISHED', 'ALL']).optional()),
 });

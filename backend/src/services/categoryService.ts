@@ -13,6 +13,10 @@ export const categoryService = {
     return categoryRepository.listWithCounts();
   },
 
+  stats() {
+    return categoryRepository.articleStats();
+  },
+
   async create({ name }: CategoryInput) {
     if (await categoryRepository.existsByName(name)) {
       throw HttpError.conflict('Category name is already in use');
