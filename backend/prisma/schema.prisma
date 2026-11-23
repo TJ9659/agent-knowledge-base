@@ -1,0 +1,63 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  AGENT
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  passwordHash String
+  role         Role           @default(AGENT)
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  articles     Article[]
+  tokens       RefreshToken[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  articles Article[]
+}
+
+model Article {
+  id         Int           @id @default(autoincrement())
+  title      String
+  content    String        @db.Text
+  status     ArticleStatus @default(DRAFT)
+  categoryId Int
+  authorId   Int
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  category   Category      @relation(fields: [categoryId], references: [id])
+  author     User          @relation(fields: [authorId], references: [id])
+
+  // used by search and ask kb
+  @@fulltext([title, content], map: "article_search")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

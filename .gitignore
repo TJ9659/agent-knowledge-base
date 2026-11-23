@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.angular/
+
+.env
+.env.*
+!.env.example
+
+backend/src/generated/
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
