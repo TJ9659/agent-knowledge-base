@@ -28,6 +28,12 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
+  // foreign key, e.g. a category deleted while an article was being saved to it
+  if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+    res.status(409).json({ status: 409, message: 'A related record is missing or still in use' });
+    return;
+  }
+
   // bad json body from express.json()
   if (err?.type === 'entity.parse.failed') {
     res.status(400).json({ status: 400, message: 'Invalid JSON body' });
