@@ -1,0 +1,153 @@
+// layer 1 is the raw scales, components should only use layer 2 (semantic tokens)
+// olive 50-300 are fills only, use 600-900 for text so it passes contrast
+
+:root {
+  // sand, warm neutrals
+  --sand-50: #f7f7f1;
+  --sand-100: #efefe5;
+  --sand-200: #e3e3d5;
+  --sand-300: #cfcfbd;
+  --sand-400: #a9a993;
+  --sand-500: #81816b;
+  --sand-600: #5f604d;
+  --sand-700: #474839;
+  --sand-800: #2f3026;
+  --sand-900: #1c1d16;
+
+  // olive, primary
+  --olive-50: #f3f6e8;
+  --olive-100: #e4ebcb;
+  --olive-200: #cbd89f;
+  --olive-300: #adc06e;
+  --olive-400: #8fa548;
+  --olive-500: #728a30;
+  --olive-600: #5a6f24;
+  --olive-700: #47581d;
+  --olive-800: #36431a;
+  --olive-900: #262f13;
+
+  // green, success
+  --green-50: #f0f9f4;
+  --green-100: #e6f4ec;
+  --green-200: #bfe3cf;
+  --green-300: #8dcbaa;
+  --green-400: #57ad80;
+  --green-500: #2f8f5e;
+  --green-600: #1f7a4d;
+  --green-700: #1a6440;
+  --green-800: #154f33;
+  --green-900: #0f3a26;
+
+  // amber, warning
+  --amber-50: #fefaf0;
+  --amber-100: #fdf3dc;
+  --amber-200: #f9e1a8;
+  --amber-300: #f2c76b;
+  --amber-400: #e5a532;
+  --amber-500: #c98412;
+  --amber-600: #a15c07;
+  --amber-700: #7a4a06;
+  --amber-800: #5e3906;
+  --amber-900: #432905;
+
+  // red, danger
+  --red-50: #fef6f5;
+  --red-100: #fdeeed;
+  --red-200: #f3c1bc;
+  --red-300: #e9928a;
+  --red-400: #dc6156;
+  --red-500: #c93a2e;
+  --red-600: #b42318;
+  --red-700: #912018;
+  --red-800: #6f1a14;
+  --red-900: #4e130f;
+
+  // navy, info and inverse surfaces
+  --navy-50: #f2f5fa;
+  --navy-100: #e8edf7;
+  --navy-200: #c9d4e8;
+  --navy-300: #9fb1d2;
+  --navy-400: #7088b6;
+  --navy-500: #4d6797;
+  --navy-600: #3b5b8c;
+  --navy-700: #2e466e;
+  --navy-800: #253757;
+  --navy-900: #1f2a44;
+
+  // surfaces, containers are darker than the page
+  --color-bg: var(--sand-50);
+  --color-surface: var(--sand-100);
+  --color-surface-strong: var(--sand-200);
+  --color-field: #ffffff;
+  --color-inverse: var(--navy-900);
+  --color-on-inverse: var(--navy-100);
+
+  // text
+  --color-text: var(--sand-900);
+  --color-text-soft: var(--sand-700);
+  --color-text-muted: var(--sand-600);
+  --color-text-disabled: var(--sand-500);
+
+  // borders
+  --color-border: var(--sand-200);
+  --color-border-strong: var(--sand-300);
+
+  // primary
+  --color-primary: var(--olive-600);
+  --color-primary-hover: var(--olive-700);
+  --color-primary-soft: var(--olive-100);
+  --color-on-primary: #ffffff;
+  --color-on-primary-soft: var(--olive-800);
+  --color-link: var(--olive-700);
+  --color-link-hover: var(--olive-800);
+  --color-focus: var(--olive-500);
+
+  // status
+  --color-success: var(--green-700);
+  --color-success-soft: var(--green-100);
+  --color-warning: var(--amber-700);
+  --color-warning-soft: var(--amber-100);
+  --color-danger: var(--red-700);
+  --color-danger-soft: var(--red-100);
+  --color-danger-border: var(--red-200);
+  --color-info: var(--navy-600);
+  --color-info-soft: var(--navy-100);
+
+  // article status badges
+  --color-badge-published-bg: var(--color-success-soft);
+  --color-badge-published-text: var(--color-success);
+  --color-badge-draft-bg: var(--color-warning-soft);
+  --color-badge-draft-text: var(--color-warning);
+
+  // spacing, 4px steps
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  // radius
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  // type
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', var(--font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 19px;
+  --text-xl: 22px;
+  --text-2xl: 30px;
+  --text-3xl: 38px;
+
+  // controls stay at least 44px tall for touch targets
+  --control-height: 44px;
+}

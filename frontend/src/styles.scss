@@ -1,4 +1,4 @@
-@use 'variables' as *;
+@use 'tokens';
 
 *,
 *::before,
@@ -8,8 +8,29 @@
 
 body {
   margin: 0;
-  font-family: $font-family;
-  color: $color-text;
-  background: $color-bg;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
   line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--color-link);
+
+  &:hover {
+    color: var(--color-link-hover);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
