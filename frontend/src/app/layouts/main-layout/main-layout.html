@@ -1,0 +1,27 @@
+<header class="header">
+  <div class="header__inner">
+    <a class="brand" routerLink="/articles">
+      <img src="logo.svg" alt="" width="32" height="32" />
+      <span>Nexora <span class="brand__kb">KB</span></span>
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      @for (link of links(); track link.path) {
+        <a [routerLink]="link.path" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{ link.label }}</a>
+      }
+    </nav>
+
+    @if (auth.user(); as user) {
+      <div class="account">
+        <span class="account__name">
+          {{ user.name }} <span class="account__role">· {{ roleLabels[user.role] }}</span>
+        </span>
+        <button type="button" (click)="auth.logout()">Log out</button>
+      </div>
+    }
+  </div>
+</header>
+
+<main class="content">
+  <router-outlet />
+</main>
