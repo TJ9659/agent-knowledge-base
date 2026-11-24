@@ -121,7 +121,16 @@
                   (keydown.enter)="saveEdit(user)"
                 />
               </td>
-              <td class="email">{{ user.email }}</td>
+              <td>
+                <input
+                  type="email"
+                  class="cell-input"
+                  formControlName="email"
+                  autocomplete="off"
+                  [attr.aria-label]="'Email for ' + user.name"
+                  (keydown.enter)="saveEdit(user)"
+                />
+              </td>
               <td>
                 <select
                   class="cell-input"
@@ -156,11 +165,16 @@
               <td colspan="5">
                 @if (editError()) {
                   <p class="error" role="alert">{{ editError() }}</p>
+                } @else if (user.isProtected) {
+                  <p class="hint">
+                    This is the system admin account. Only its name can be changed.
+                  </p>
                 } @else if (user.id === currentUserId) {
-                  <p class="hint">You can change your own name, but not your own role.</p>
+                  <p class="hint">You can change your own name and email, but not your own role.</p>
                 } @else {
                   <p class="hint">
-                    Changing the role logs them out, so they'll need to sign in again.
+                    A new email becomes their login. Changing the role logs them out, so they'll
+                    need to sign in again.
                   </p>
                 }
               </td>
@@ -170,7 +184,24 @@
               <td class="name">
                 {{ user.name }}
                 @if (user.id === currentUserId) {
-                  <span class="you">you</span>
+                  <span class="tag">you</span>
+                }
+                @if (user.isProtected) {
+                  <span
+                    class="tag tag--system"
+                    title="Only the name of this account can be changed"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v10H6z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    System admin
+                  </span>
                 }
               </td>
               <td class="email">{{ user.email }}</td>
@@ -187,10 +218,8 @@
                     <button
                       type="button"
                       class="button button--danger"
-                      [disabled]="user.id === currentUserId"
-                      [title]="
-                        user.id === currentUserId ? 'You cannot deactivate your own account' : ''
-                      "
+                      [disabled]="user.isProtected || user.id === currentUserId"
+                      [title]="deactivateBlockedReason(user)"
                       (click)="deactivate(user)"
                     >
                       Deactivate

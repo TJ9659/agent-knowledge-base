@@ -20,6 +20,14 @@ function errorMessage(err: HttpErrorResponse) {
   return [err.error?.message ?? 'Something went wrong. Please try again.', ...details].join(' ');
 }
 
+// tells the admin what the change means for that person
+function savedMessage(name: string, changes: UserChanges) {
+  if (changes.role)
+    return `${name} is now ${ROLE_LABELS[changes.role]}. They'll need to sign in again.`;
+  if (changes.email) return `Saved ${name}. They now log in with ${changes.email}.`;
+  return `Saved ${name}.`;
+}
+
 // admin only: there is no public sign up, accounts are created here
 @Component({
   imports: [ReactiveFormsModule, DataTable, Pagination],
@@ -56,7 +64,7 @@ export class Users {
   });
 
   // one row at a time is edited in place, nothing is saved until Save
-  readonly editForm = this.fb.group({ name: [''], role: ['AGENT' as Role] });
+  readonly editForm = this.fb.group({ name: [''], email: [''], role: ['AGENT' as Role] });
 
   protected readonly showCreate = signal(false);
   protected readonly creating = signal(false);
@@ -105,9 +113,12 @@ export class Users {
   }
 
   protected startEdit(user: User) {
-    this.editForm.setValue({ name: user.name, role: user.role });
-    const role = this.editForm.controls.role;
-    if (user.id === this.currentUserId) role.disable();
+    this.editForm.setValue({ name: user.name, email: user.email, role: user.role });
+    // same rules as the backend: nobody changes the system admin's role or email, nobody changes their own role
+    const { email, role } = this.editForm.controls;
+    if (user.isProtected) email.disable();
+    else email.enable();
+    if (user.isProtected || user.id === this.currentUserId) role.disable();
     else role.enable();
     this.editError.set(null);
     this.editingId.set(user.id);
@@ -119,15 +130,21 @@ export class Users {
 
   protected saveEdit(user: User) {
     const name = this.editForm.controls.name.value.trim();
+    const email = this.editForm.controls.email.value.trim().toLowerCase();
     const role = this.editForm.controls.role.value;
     if (name.length < 2 || name.length > 100) {
       this.editError.set('Enter a name of 2 to 100 characters.');
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      this.editError.set('Enter a valid email address.');
       return;
     }
 
     // only send what changed, nothing changed means nothing to save
     const changes: UserChanges = {};
     if (name !== user.name) changes.name = name;
+    if (email !== user.email) changes.email = email;
     if (role !== user.role) changes.role = role;
     if (Object.keys(changes).length === 0) {
       this.cancelEdit();
@@ -141,14 +158,17 @@ export class Users {
       .subscribe({
         next: () => {
           this.editingId.set(null);
-          this.done(
-            changes.role
-              ? `${name} is now ${this.roleLabels[role]}. They'll need to sign in again.`
-              : `Saved ${name}.`,
-          );
+          this.done(savedMessage(name, changes));
         },
         error: (err: HttpErrorResponse) => this.editError.set(errorMessage(err)),
       });
+  }
+
+  // shown when hovering a disabled Deactivate button
+  protected deactivateBlockedReason(user: User) {
+    if (user.isProtected) return 'The system admin account cannot be deactivated';
+    if (user.id === this.currentUserId) return 'You cannot deactivate your own account';
+    return '';
   }
 
   protected async deactivate(user: User) {

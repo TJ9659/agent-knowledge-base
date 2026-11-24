@@ -16,10 +16,11 @@ const userWith = (id: number, name: string, role: User['role'], isActive = true)
   email: `${name.split(' ')[0].toLowerCase()}@nexora.test`,
   role,
   isActive,
+  isProtected: false,
   createdAt: '2026-11-23T00:00:00.000Z',
 });
 
-const admin = userWith(1, 'Aisha Rahman', 'ADMIN');
+const admin = { ...userWith(1, 'Aisha Rahman', 'ADMIN'), isProtected: true };
 const agent = userWith(4, 'Hafiz Ismail', 'AGENT');
 const inactive = userWith(5, 'Mei Ling Wong', 'AGENT', false);
 
@@ -143,7 +144,11 @@ describe('Users', () => {
     buttonIn(rowFor(element, 'Hafiz'), 'Edit').click();
     await settle();
 
-    expect(page.editForm.getRawValue()).toEqual({ name: 'Hafiz Ismail', role: 'AGENT' });
+    expect(page.editForm.getRawValue()).toEqual({
+      name: 'Hafiz Ismail',
+      email: 'hafiz@nexora.test',
+      role: 'AGENT',
+    });
     page.editForm.controls.role.setValue('EDITOR');
     expect(userService.update).not.toHaveBeenCalled();
 
@@ -190,17 +195,55 @@ describe('Users', () => {
     );
   });
 
-  it('lets you rename yourself but not change your own role', async () => {
+  it('locks the system admin: only the name can change', async () => {
     const { page, element, settle } = await open();
-    buttonIn(rowFor(element, 'Aisha'), 'Edit').click();
-    await settle();
+    const row = rowFor(element, 'Aisha');
 
+    expect(row.textContent).toContain('System admin');
+    expect(buttonIn(row, 'Deactivate').disabled).toBe(true);
+
+    buttonIn(row, 'Edit').click();
+    await settle();
     expect(page.editForm.controls.role.disabled).toBe(true);
+    expect(page.editForm.controls.email.disabled).toBe(true);
+    expect(element.querySelector('tr.edit-note')?.textContent).toContain(
+      'Only its name can be changed',
+    );
+
     page.editForm.controls.name.setValue('Aisha R.');
     buttonIn(element.querySelector('tr.is-editing')!, 'Save').click();
     await settle();
-
     expect(userService.update).toHaveBeenCalledWith(1, { name: 'Aisha R.' });
+  });
+
+  it('changes an email, trimmed and lowercased', async () => {
+    const { page, element, settle } = await open();
+    buttonIn(rowFor(element, 'Hafiz'), 'Edit').click();
+    await settle();
+
+    page.editForm.controls.email.setValue('  Hafiz.Ismail@Nexora.test ');
+    buttonIn(element.querySelector('tr.is-editing')!, 'Save').click();
+    await settle();
+
+    expect(userService.update).toHaveBeenCalledWith(4, { email: 'hafiz.ismail@nexora.test' });
+    expect(element.querySelector('[role="status"]')?.textContent).toContain(
+      'They now log in with hafiz.ismail@nexora.test',
+    );
+  });
+
+  it('catches an invalid email before sending', async () => {
+    const { page, element, settle } = await open();
+    buttonIn(rowFor(element, 'Hafiz'), 'Edit').click();
+    await settle();
+
+    page.editForm.controls.email.setValue('not-an-email');
+    buttonIn(element.querySelector('tr.is-editing')!, 'Save').click();
+    await settle();
+
+    expect(userService.update).not.toHaveBeenCalled();
+    expect(element.querySelector('tr.edit-note [role="alert"]')?.textContent).toContain(
+      'valid email',
+    );
   });
 
   it('deactivates after confirming, and reactivates', async () => {

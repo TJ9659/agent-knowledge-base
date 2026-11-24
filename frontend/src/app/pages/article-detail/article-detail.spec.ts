@@ -40,6 +40,7 @@ const userWith = (id: number, role: Role): User => ({
   email: 'someone@nexora.test',
   role,
   isActive: true,
+  isProtected: false,
   createdAt: '2026-11-23T00:00:00.000Z',
 });
 

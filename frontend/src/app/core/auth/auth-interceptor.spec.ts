@@ -17,6 +17,7 @@ const user: User = {
   email: 'agent@nexora.test',
   role: 'AGENT',
   isActive: true,
+  isProtected: false,
   createdAt: '2026-11-23T00:00:00.000Z',
 };
 

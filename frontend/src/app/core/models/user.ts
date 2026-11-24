@@ -13,6 +13,8 @@ export interface User {
   email: string;
   role: Role;
   isActive: boolean;
+  // the system admin: only its name can be changed
+  isProtected: boolean;
   createdAt: string;
 }
 
@@ -25,7 +27,7 @@ export interface UserInput {
 }
 
 // what an admin can change on an existing user
-export type UserChanges = Partial<Pick<User, 'name' | 'role' | 'isActive'>>;
+export type UserChanges = Partial<Pick<User, 'name' | 'email' | 'role' | 'isActive'>>;
 
 export interface AuthResponse {
   accessToken: string;
