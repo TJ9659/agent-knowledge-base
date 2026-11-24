@@ -35,37 +35,6 @@
       }
     </header>
 
-    @if (parts(); as parts) {
-      @if (parts.intro) {
-        <app-markdown [content]="parts.intro" />
-      }
-
-      @for (section of parts.sections; track $index) {
-        @if (section.kind === 'plain') {
-          <section class="section">
-            <h2>{{ section.heading }}</h2>
-            <app-markdown [content]="section.body" />
-          </section>
-        } @else {
-          <section class="callout" [class.callout--escalate]="section.kind === 'escalate'">
-            <div class="callout__head">
-              <h2>{{ section.heading }}</h2>
-              @if (section.kind === 'customer') {
-                <button
-                  type="button"
-                  class="button button--light"
-                  (click)="copy(section.heading, body)"
-                >
-                  {{ copied() === section.heading ? 'Copied' : 'Copy' }}
-                </button>
-              }
-            </div>
-            <div #body>
-              <app-markdown [content]="section.body" />
-            </div>
-          </section>
-        }
-      }
-    }
+    <app-article-body [content]="data.content" />
   </article>
 }

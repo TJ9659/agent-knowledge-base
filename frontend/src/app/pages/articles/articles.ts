@@ -5,6 +5,7 @@ import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/r
 import { debounceTime, distinctUntilChanged, map, Subject } from 'rxjs';
 import { ArticleQuery, ArticleService } from '../../core/api/article.service';
 import { CategoryService } from '../../core/api/category.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { Pagination } from '../../shared/pagination/pagination';
 
 // reads the filters from the url, missing or bad values fall back to defaults
@@ -33,6 +34,8 @@ export class Articles {
   private readonly articleService = inject(ArticleService);
   private readonly categoryService = inject(CategoryService);
   private readonly typing = new Subject<string>();
+
+  protected readonly canWrite = inject(AuthService).hasRole('EDITOR', 'ADMIN');
 
   // the url holds the filters, so refresh, back and shared links keep them
   protected readonly query = toSignal(inject(ActivatedRoute).queryParamMap.pipe(map(toQuery)), {

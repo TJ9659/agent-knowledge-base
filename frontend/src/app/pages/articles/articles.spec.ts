@@ -4,6 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { ArticleService } from '../../core/api/article.service';
 import { CategoryService } from '../../core/api/category.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { ArticleListItem } from '../../core/models/article';
 import { Paginated } from '../../core/models/paginated';
 import { Articles } from './articles';
@@ -43,6 +44,7 @@ describe('Articles', () => {
         provideRouter([{ path: 'articles', component: Articles }]),
         { provide: ArticleService, useValue: articleService },
         { provide: CategoryService, useValue: { list: () => of(categories) } },
+        { provide: AuthService, useValue: { hasRole: () => false } },
       ],
     });
     const harness = await RouterTestingHarness.create();

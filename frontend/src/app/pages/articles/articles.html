@@ -1,7 +1,12 @@
-<section class="page">
-  <h1>Articles</h1>
-  <p class="page__lead">Search and browse published articles.</p>
-</section>
+<div class="heading">
+  <section class="page">
+    <h1>Articles</h1>
+    <p class="page__lead">Search and browse published articles.</p>
+  </section>
+  @if (canWrite) {
+    <a class="button button--primary" routerLink="/articles/new">New article</a>
+  }
+</div>
 
 <form class="search" role="search" (submit)="search($event, searchInput.value)">
   <label for="search" class="visually-hidden">Search articles</label>

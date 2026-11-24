@@ -1,5 +1,4 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -57,7 +56,12 @@ describe('ArticleDetail', () => {
           { path: 'articles/:id', component: ArticleDetail },
         ]),
         { provide: ArticleService, useValue: articleService },
-        { provide: AuthService, useValue: { user: signal(user) } },
+        {
+          provide: AuthService,
+          useValue: {
+            canEditArticle: (authorId: number) => user.role === 'ADMIN' || user.id === authorId,
+          },
+        },
         { provide: ConfirmService, useValue: confirm },
       ],
     });

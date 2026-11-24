@@ -26,7 +26,11 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([{ path: 'login', children: [] }])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+      ],
     });
     auth = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -62,6 +66,14 @@ describe('AuthService', () => {
     expect(auth.hasRole('AGENT')).toBe(true);
     expect(auth.hasRole('ADMIN')).toBe(false);
     expect(auth.hasRole('EDITOR', 'ADMIN')).toBe(false);
+  });
+
+  it('canEditArticle allows the author, and admins for any article', () => {
+    expect(auth.canEditArticle(4)).toBe(false);
+
+    signIn();
+    expect(auth.canEditArticle(user.id)).toBe(true);
+    expect(auth.canEditArticle(99)).toBe(false);
   });
 
   it('logout tells the server and forgets the session', () => {

@@ -1,4 +1,9 @@
-import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -66,7 +71,9 @@ describe('authInterceptor', () => {
 
     http.get('/api/articles').subscribe((body) => (result = body));
 
-    httpMock.expectOne('/api/articles').flush({ message: 'Invalid or expired token' }, unauthorized);
+    httpMock
+      .expectOne('/api/articles')
+      .flush({ message: 'Invalid or expired token' }, unauthorized);
     httpMock.expectOne('/api/auth/refresh').flush({ accessToken: 'new-token', user });
 
     const retry = httpMock.expectOne('/api/articles');
@@ -82,8 +89,12 @@ describe('authInterceptor', () => {
 
     http.get('/api/articles').subscribe({ error: (err: HttpErrorResponse) => (error = err) });
 
-    httpMock.expectOne('/api/articles').flush({ message: 'Invalid or expired token' }, unauthorized);
-    httpMock.expectOne('/api/auth/refresh').flush({ message: 'Invalid refresh token' }, unauthorized);
+    httpMock
+      .expectOne('/api/articles')
+      .flush({ message: 'Invalid or expired token' }, unauthorized);
+    httpMock
+      .expectOne('/api/auth/refresh')
+      .flush({ message: 'Invalid refresh token' }, unauthorized);
     httpMock.expectOne('/api/auth/logout').flush(null);
 
     expect(auth.isLoggedIn()).toBe(false);
@@ -95,7 +106,9 @@ describe('authInterceptor', () => {
     let error: HttpErrorResponse | undefined;
 
     http.get('/api/articles/999').subscribe({ error: (err: HttpErrorResponse) => (error = err) });
-    httpMock.expectOne('/api/articles/999').flush({ message: 'Article not found' }, { status: 404, statusText: 'Not Found' });
+    httpMock
+      .expectOne('/api/articles/999')
+      .flush({ message: 'Article not found' }, { status: 404, statusText: 'Not Found' });
 
     expect(error?.status).toBe(404);
     expect(auth.isLoggedIn()).toBe(true);

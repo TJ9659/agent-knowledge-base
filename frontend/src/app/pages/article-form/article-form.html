@@ -1,0 +1,169 @@
+<a class="back" [routerLink]="id ? ['/articles', id] : '/articles'"
+  >← {{ id ? 'Back to article' : 'All articles' }}</a
+>
+
+<section class="page">
+  <h1>{{ id ? 'Edit article' : 'New article' }}</h1>
+  <p class="page__lead">
+    Fill in each section. Markdown works inside the boxes: **bold**, numbered and bullet lists.
+  </p>
+</section>
+
+@if (loading()) {
+  <p class="status">Loading article…</p>
+} @else if (loadError()) {
+  <div class="status status--error" role="alert">
+    <p>{{ loadError() }}</p>
+  </div>
+} @else {
+  <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    @if (saveError()) {
+      <p class="alert" role="alert">{{ saveError() }}</p>
+    }
+
+    <div class="field">
+      <label for="title">Title</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        [attr.aria-invalid]="showError('title')"
+      />
+      @if (showError('title')) {
+        <p class="error">Enter a title of 3 to 150 characters.</p>
+      }
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="category">Category</label>
+        <select
+          id="category"
+          formControlName="categoryId"
+          [attr.aria-invalid]="showError('categoryId')"
+        >
+          <option [ngValue]="0" disabled>Choose a category</option>
+          @for (category of categories.value(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+        @if (showError('categoryId')) {
+          <p class="error">Choose a category.</p>
+        }
+      </div>
+
+      <fieldset class="field">
+        <legend>Status</legend>
+        <div class="radios">
+          <label><input type="radio" formControlName="status" value="DRAFT" /> Draft</label>
+          <label><input type="radio" formControlName="status" value="PUBLISHED" /> Published</label>
+        </div>
+        <p class="hint">Only published articles are visible to agents.</p>
+      </fieldset>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Write or preview">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'write'"
+        (click)="tab.set('write')"
+      >
+        Write
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="tab() === 'preview'"
+        (click)="tab.set('preview')"
+      >
+        Preview
+      </button>
+    </div>
+
+    @if (tab() === 'write') {
+      <div class="sections" role="tabpanel">
+        <div class="field">
+          <label for="whenToUse">When to use</label>
+          <textarea
+            id="whenToUse"
+            rows="2"
+            formControlName="whenToUse"
+            placeholder="the customer sees the same charge twice on their bill."
+            [attr.aria-invalid]="showError('whenToUse')"
+          ></textarea>
+          <p class="hint">One sentence: when should an agent open this article?</p>
+          @if (showError('whenToUse')) {
+            <p class="error">Say when this article should be used.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="steps">Steps</label>
+          <textarea
+            id="steps"
+            rows="7"
+            formControlName="steps"
+            placeholder="1. Verify the caller.&#10;2. Open Billing > Transactions."
+            [attr.aria-invalid]="showError('steps')"
+          ></textarea>
+          <p class="hint">
+            A numbered list, one step per line. Indent with 3 spaces for sub-points.
+          </p>
+          @if (showError('steps')) {
+            <p class="error">Add at least one step.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="customer"
+            >What to tell the customer <span class="optional">optional</span></label
+          >
+          <textarea
+            id="customer"
+            rows="4"
+            formControlName="customer"
+            placeholder="- Refunds take 5–7 working days to appear."
+          ></textarea>
+          <p class="hint">
+            Bullet points the agent can read out. Shown in a box with a Copy button.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="escalate">Escalate if <span class="optional">optional</span></label>
+          <textarea
+            id="escalate"
+            rows="3"
+            formControlName="escalate"
+            placeholder="- The amount is over RM 500."
+          ></textarea>
+          <p class="hint">When to hand over to a supervisor. Shown in an amber box.</p>
+        </div>
+
+        <div class="field">
+          <label for="more">More sections <span class="optional">optional</span></label>
+          <textarea
+            id="more"
+            rows="4"
+            formControlName="more"
+            placeholder="## Never&#10;- Read a password out loud."
+          ></textarea>
+          <p class="hint">Any other sections, each starting with <code>## Heading</code>.</p>
+        </div>
+      </div>
+    } @else {
+      <div class="preview" role="tabpanel">
+        <h2 class="preview__title">{{ previewTitle() }}</h2>
+        <app-article-body [content]="previewContent()" />
+      </div>
+    }
+
+    <div class="actions">
+      <a class="button" [routerLink]="id ? ['/articles', id] : '/articles'">Cancel</a>
+      <button type="submit" class="button button--primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : id ? 'Save changes' : 'Create article' }}
+      </button>
+    </div>
+  </form>
+}

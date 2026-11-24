@@ -31,6 +31,12 @@ export class AuthService {
     return roles.includes(user.role);
   }
 
+  // same rule as the backend: admins edit anything, editors only their own articles
+  canEditArticle(authorId: number): boolean {
+    const user = this.currentUser();
+    return user !== null && (user.role === 'ADMIN' || user.id === authorId);
+  }
+
   private setSession({ accessToken, user }: AuthResponse) {
     this.accessToken = accessToken;
     this.currentUser.set(user);
@@ -56,13 +62,13 @@ export class AuthService {
   }
 
   refresh() {
-    return this.refreshRequest ??= this.http
+    return (this.refreshRequest ??= this.http
       .post<AuthResponse>(`${this.api}/refresh`, {}, { withCredentials: true })
       .pipe(
         tap((res) => this.setSession(res)),
         finalize(() => (this.refreshRequest = null)),
         shareReplay(1),
-      );
+      ));
   }
 
   restoreSession() {

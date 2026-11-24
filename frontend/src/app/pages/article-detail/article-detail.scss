@@ -64,44 +64,6 @@
   font-size: var(--text-sm);
 }
 
-.section,
-.callout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-
-  h2 {
-    margin: 0;
-    font-size: var(--text-xl);
-  }
-}
-
-.callout {
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface-strong);
-
-  h2 {
-    color: var(--color-on-primary-soft);
-  }
-}
-
-.callout--escalate {
-  background: var(--color-warning-soft);
-
-  h2 {
-    color: var(--color-warning);
-  }
-}
-
-.callout__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
 .status {
   padding: var(--space-6);
   border-radius: var(--radius-lg);
