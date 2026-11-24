@@ -4,15 +4,8 @@ import { guestGuard } from './core/guards/guest-guard';
 import { roleGuard } from './core/guards/role-guard';
 import { AuthLayout } from './layouts/auth-layout/auth-layout';
 import { MainLayout } from './layouts/main-layout/main-layout';
-import { Categories } from './pages/admin/categories/categories';
-import { Users } from './pages/admin/users/users';
-import { ArticleDetail } from './pages/article-detail/article-detail';
-import { ArticleForm } from './pages/article-form/article-form';
-import { Articles } from './pages/articles/articles';
-import { Ask } from './pages/ask/ask';
-import { Login } from './pages/login/login';
-import { MyArticles } from './pages/my-articles/my-articles';
 
+// lazy load pages
 export const routes: Routes = [
   // exactly "/" only, otherwise the empty paths below match with no page inside
   { path: '', pathMatch: 'full', redirectTo: 'articles' },
@@ -20,44 +13,54 @@ export const routes: Routes = [
     path: '',
     component: AuthLayout,
     canActivate: [guestGuard],
-    children: [{ path: 'login', component: Login }],
+    children: [
+      { path: 'login', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
+    ],
   },
   {
     path: '',
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: 'articles', component: Articles },
+      {
+        path: 'articles',
+        loadComponent: () => import('./pages/articles/articles').then((m) => m.Articles),
+      },
       // before articles/:id, otherwise "new" is read as an id
       {
         path: 'articles/new',
-        component: ArticleForm,
+        loadComponent: () => import('./pages/article-form/article-form').then((m) => m.ArticleForm),
         canActivate: [roleGuard],
         data: { roles: ['EDITOR', 'ADMIN'] },
       },
-      { path: 'articles/:id', component: ArticleDetail },
+      {
+        path: 'articles/:id',
+        loadComponent: () =>
+          import('./pages/article-detail/article-detail').then((m) => m.ArticleDetail),
+      },
       {
         path: 'articles/:id/edit',
-        component: ArticleForm,
+        loadComponent: () => import('./pages/article-form/article-form').then((m) => m.ArticleForm),
         canActivate: [roleGuard],
         data: { roles: ['EDITOR', 'ADMIN'] },
       },
-      { path: 'ask', component: Ask },
+      { path: 'ask', loadComponent: () => import('./pages/ask/ask').then((m) => m.Ask) },
       {
         path: 'my-articles',
-        component: MyArticles,
+        loadComponent: () => import('./pages/my-articles/my-articles').then((m) => m.MyArticles),
         canActivate: [roleGuard],
         data: { roles: ['EDITOR', 'ADMIN'] },
       },
       {
         path: 'admin/categories',
-        component: Categories,
+        loadComponent: () =>
+          import('./pages/admin/categories/categories').then((m) => m.Categories),
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
       },
       {
         path: 'admin/users',
-        component: Users,
+        loadComponent: () => import('./pages/admin/users/users').then((m) => m.Users),
         canActivate: [roleGuard],
         data: { roles: ['ADMIN'] },
       },
