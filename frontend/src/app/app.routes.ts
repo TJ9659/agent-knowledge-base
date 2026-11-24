@@ -6,6 +6,7 @@ import { AuthLayout } from './layouts/auth-layout/auth-layout';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { Categories } from './pages/admin/categories/categories';
 import { Users } from './pages/admin/users/users';
+import { ArticleDetail } from './pages/article-detail/article-detail';
 import { Articles } from './pages/articles/articles';
 import { Ask } from './pages/ask/ask';
 import { Login } from './pages/login/login';
@@ -26,10 +27,26 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'articles', component: Articles },
+      { path: 'articles/:id', component: ArticleDetail },
       { path: 'ask', component: Ask },
-      { path: 'my-articles', component: MyArticles, canActivate: [roleGuard], data: { roles: ['EDITOR', 'ADMIN'] } },
-      { path: 'admin/categories', component: Categories, canActivate: [roleGuard], data: { roles: ['ADMIN'] } },
-      { path: 'admin/users', component: Users, canActivate: [roleGuard], data: { roles: ['ADMIN'] } },
+      {
+        path: 'my-articles',
+        component: MyArticles,
+        canActivate: [roleGuard],
+        data: { roles: ['EDITOR', 'ADMIN'] },
+      },
+      {
+        path: 'admin/categories',
+        component: Categories,
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+      },
+      {
+        path: 'admin/users',
+        component: Users,
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] },
+      },
     ],
   },
   { path: '**', redirectTo: 'articles' },
