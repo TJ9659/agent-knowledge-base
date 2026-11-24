@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role, User } from '../../core/models/user';
 import { MainLayout } from './main-layout';
@@ -22,10 +22,14 @@ describe('MainLayout', () => {
     await TestBed.configureTestingModule({
       imports: [MainLayout],
       providers: [
-        provideRouter([]),
+        provideRouter([{ path: 'ask', children: [] }]),
         {
           provide: AuthService,
-          useValue: { user: signal(user), hasRole: (...roles: Role[]) => roles.includes(role), logout },
+          useValue: {
+            user: signal(user),
+            hasRole: (...roles: Role[]) => roles.includes(role),
+            logout,
+          },
         },
       ],
     }).compileComponents();
@@ -63,5 +67,34 @@ describe('MainLayout', () => {
 
     page.querySelector<HTMLButtonElement>('.account button')?.click();
     expect(logout).toHaveBeenCalled();
+  });
+
+  it('the menu button opens and closes the menu', async () => {
+    await setup('AGENT');
+    const page = fixture.nativeElement as HTMLElement;
+    const button = page.querySelector<HTMLButtonElement>('.menu-button')!;
+
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Close menu');
+    expect(page.querySelector('#main-menu')?.classList.contains('is-open')).toBe(true);
+
+    page.querySelector('header')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('closes the menu after navigating', async () => {
+    await setup('AGENT');
+    const page = fixture.nativeElement as HTMLElement;
+    page.querySelector<HTMLButtonElement>('.menu-button')!.click();
+    fixture.detectChanges();
+
+    await TestBed.inject(Router).navigateByUrl('/ask');
+    fixture.detectChanges();
+
+    expect(page.querySelector('#main-menu')?.classList.contains('is-open')).toBe(false);
   });
 });

@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 :host {
   display: block;
   min-height: 100vh;
@@ -32,6 +34,34 @@
 
 .brand__kb {
   color: var(--color-primary);
+}
+
+// links and account sit in the header row on wide screens
+.menu {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+}
+
+// only shown on phones, see the media query below
+.menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-strong);
+  }
 }
 
 .nav {
@@ -100,4 +130,43 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
+}
+
+// phones: one header row with the logo and a menu button, the links open as a panel below
+@media (max-width: $bp-md) {
+  .header__inner {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .menu-button {
+    display: flex;
+  }
+
+  .menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-2) 0 var(--space-1);
+
+    &.is-open {
+      display: flex;
+    }
+  }
+
+  .nav {
+    flex-direction: column;
+    margin-right: 0;
+  }
+
+  .account {
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .content {
+    padding: var(--space-6) var(--space-4);
+  }
 }
