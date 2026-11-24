@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-import { Role } from '../../core/models/user';
+import { Role, ROLE_LABELS } from '../../core/models/user';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 
 interface NavLink {
@@ -20,8 +20,6 @@ const NAV_LINKS: NavLink[] = [
   { path: '/admin/categories', label: 'Categories', roles: ['ADMIN'] },
   { path: '/admin/users', label: 'Users', roles: ['ADMIN'] },
 ];
-
-const ROLE_LABELS: Record<Role, string> = { ADMIN: 'Admin', EDITOR: 'Editor', AGENT: 'Agent' };
 
 // header for every page after logging in, the links fold into a menu button on phones
 @Component({

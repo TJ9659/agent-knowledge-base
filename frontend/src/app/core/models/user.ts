@@ -1,5 +1,12 @@
 export type Role = 'ADMIN' | 'EDITOR' | 'AGENT';
 
+// how each role is written on screen
+export const ROLE_LABELS: Record<Role, string> = {
+  ADMIN: 'Admin',
+  EDITOR: 'Editor',
+  AGENT: 'Agent',
+};
+
 export interface User {
   id: number;
   name: string;
