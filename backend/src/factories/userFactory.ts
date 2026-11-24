@@ -8,6 +8,7 @@ interface UserOverrides {
   password?: string;
   role?: Role;
   isActive?: boolean;
+  isProtected?: boolean;
 }
 
 let seq = 0;

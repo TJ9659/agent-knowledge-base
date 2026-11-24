@@ -27,6 +27,8 @@ model User {
   passwordHash String
   role         Role           @default(AGENT)
   isActive     Boolean        @default(true)
+  // the system admin, nobody can change its role or email or deactivate it
+  isProtected  Boolean        @default(false)
   createdAt    DateTime       @default(now())
   articles     Article[]
   tokens       RefreshToken[]

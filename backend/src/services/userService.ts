@@ -31,11 +31,20 @@ export const userService = {
   },
 
   async update(currentUser: AuthUser, id: number, input: UpdateUserInput) {
-    await getOrThrow(id);
+    const target = await getOrThrow(id);
+
+    // the system admin always stays an active admin with the same login
+    if (target.isProtected && (input.role || input.email || input.isActive !== undefined)) {
+      throw HttpError.forbidden('This account is protected. Only its name can be changed.');
+    }
 
     // stops an admin locking themselves out
     if (id === currentUser.id && (input.isActive === false || (input.role && input.role !== 'ADMIN'))) {
       throw HttpError.badRequest('You cannot deactivate or demote your own account');
+    }
+
+    if (input.email && (await userRepository.existsByEmail(input.email, id))) {
+      throw HttpError.conflict('Email is already in use');
     }
 
     const user = await userRepository.update(id, input);
@@ -49,7 +58,10 @@ export const userService = {
 
   // soft delete, keeps their articles
   async deactivate(currentUser: AuthUser, id: number) {
-    await getOrThrow(id);
+    const target = await getOrThrow(id);
+    if (target.isProtected) {
+      throw HttpError.forbidden('This account is protected and cannot be deactivated.');
+    }
     if (id === currentUser.id) {
       throw HttpError.badRequest('You cannot deactivate your own account');
     }

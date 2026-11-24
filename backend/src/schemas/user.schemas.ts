@@ -11,6 +11,7 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z
   .object({
     name: z.string().trim().min(2).max(100),
+    email: z.string().trim().toLowerCase().pipe(z.email()),
     role: z.enum(Role),
     isActive: z.boolean(),
   })

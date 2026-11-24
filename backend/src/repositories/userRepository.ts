@@ -8,6 +8,7 @@ export const publicUserSelect = {
   email: true,
   role: true,
   isActive: true,
+  isProtected: true,
   createdAt: true,
 } satisfies Prisma.UserSelect;
 
@@ -23,8 +24,11 @@ export const userRepository = {
     return prisma.user.findUnique({ where: { id }, select: publicUserSelect });
   },
 
-  existsByEmail(email: string) {
-    return prisma.user.count({ where: { email } }).then((count) => count > 0);
+  // excludeId lets a user keep their own email when it is sent unchanged
+  existsByEmail(email: string, excludeId?: number) {
+    return prisma.user
+      .count({ where: { email, ...(excludeId ? { id: { not: excludeId } } : {}) } })
+      .then((count) => count > 0);
   },
 
   async list({ skip, take }: { skip: number; take: number }) {
