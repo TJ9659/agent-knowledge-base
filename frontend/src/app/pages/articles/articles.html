@@ -2,3 +2,95 @@
   <h1>Articles</h1>
   <p class="page__lead">Search and browse published articles.</p>
 </section>
+
+<form class="search" role="search" (submit)="search($event, searchInput.value)">
+  <label for="search" class="visually-hidden">Search articles</label>
+  <input
+    #searchInput
+    id="search"
+    type="search"
+    placeholder="Search articles, e.g. double charge"
+    [value]="query().q ?? ''"
+    (input)="onType(searchInput.value)"
+  />
+</form>
+
+<div class="layout">
+  <nav class="categories" aria-label="Categories">
+    <p class="categories__label">Categories</p>
+    <a
+      routerLink="/articles"
+      [queryParams]="{ categoryId: null, page: null }"
+      queryParamsHandling="merge"
+      [class.is-active]="!query().categoryId"
+      [attr.aria-current]="!query().categoryId ? 'page' : null"
+    >
+      <span>All articles</span>
+      <span class="count">{{ totalPublished() }}</span>
+    </a>
+    @for (category of categories.value(); track category.id) {
+      <a
+        routerLink="/articles"
+        [queryParams]="{ categoryId: category.id, page: null }"
+        queryParamsHandling="merge"
+        [class.is-active]="query().categoryId === category.id"
+        [attr.aria-current]="query().categoryId === category.id ? 'page' : null"
+      >
+        <span>{{ category.name }}</span>
+        <span class="count">{{ category.articleCount }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="results" aria-live="polite">
+    @if (articles.isLoading()) {
+      <p class="status">Loading articles…</p>
+    } @else if (articles.error()) {
+      <div class="status status--error">
+        <p>Couldn't load articles. Check your connection and try again.</p>
+        <button type="button" (click)="articles.reload()">Try again</button>
+      </div>
+    } @else if (articles.value(); as result) {
+      <p class="summary">
+        {{ result.total }} {{ result.total === 1 ? 'article' : 'articles' }}
+        @if (query().q) {
+          for “{{ query().q }}”
+        }
+        @if (selectedCategory(); as category) {
+          in {{ category.name }}
+        }
+        @if (query().q || query().categoryId) {
+          · <a routerLink="/articles">Clear filters</a>
+        }
+      </p>
+
+      @if (result.data.length === 0) {
+        <div class="status">
+          <p>No articles match. Try different words or another category.</p>
+        </div>
+      } @else {
+        <ul class="cards">
+          @for (article of result.data; track article.id) {
+            <li>
+              <a class="card" [routerLink]="['/articles', article.id]">
+                <span class="card__category">{{ article.category.name }}</span>
+                <span class="card__title">{{ article.title }}</span>
+                <span class="card__snippet">{{ article.snippet }}</span>
+                <span class="card__meta"
+                  >{{ article.author.name }} · {{ article.updatedAt | date: 'd MMM y' }}</span
+                >
+              </a>
+            </li>
+          }
+        </ul>
+      }
+
+      <app-pagination
+        [page]="result.page"
+        [pageSize]="result.pageSize"
+        [total]="result.total"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  </div>
+</div>

@@ -30,6 +30,16 @@ a {
   }
 }
 
+// hidden on screen but still read by screen readers, e.g. a label for a search box
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 // shared page heading for everything inside the main layout
 .page {
   display: flex;
