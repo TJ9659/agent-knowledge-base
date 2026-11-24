@@ -12,40 +12,6 @@
   gap: var(--space-4);
 }
 
-// wide tables scroll inside their box on phones instead of the whole page
-.table-wrap {
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-table {
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-th,
-td {
-  padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-  vertical-align: middle;
-}
-
-th {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
-}
-
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-
 .title a {
   color: var(--color-text);
   font-weight: 600;
@@ -60,12 +26,6 @@ tbody tr:last-child td {
 .date {
   color: var(--color-text-muted);
   white-space: nowrap;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
 }
 
 .alert {

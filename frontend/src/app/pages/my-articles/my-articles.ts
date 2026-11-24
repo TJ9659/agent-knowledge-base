@@ -6,12 +6,13 @@ import { map } from 'rxjs';
 import { ArticleService } from '../../core/api/article.service';
 import { ArticleListItem } from '../../core/models/article';
 import { ConfirmService } from '../../shared/confirm-dialog/confirm.service';
+import { DataTable } from '../../shared/data-table/data-table';
 import { Pagination } from '../../shared/pagination/pagination';
 import { StatusBadge } from '../../shared/status-badge/status-badge';
 
 // your own articles in any status, the route only lets editors and admins in
 @Component({
-  imports: [RouterLink, DatePipe, Pagination, StatusBadge],
+  imports: [RouterLink, DatePipe, DataTable, Pagination, StatusBadge],
   selector: 'app-my-articles',
   styleUrl: './my-articles.scss',
   templateUrl: './my-articles.html',

@@ -25,39 +25,37 @@
         <a class="button button--primary" routerLink="/articles/new">Write your first article</a>
       </div>
     } @else {
-      <div class="table-wrap">
-        <table>
-          <thead>
+      <app-data-table minWidth="640px">
+        <thead>
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Category</th>
+            <th scope="col">Status</th>
+            <th scope="col">Updated</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (article of result.data; track article.id) {
             <tr>
-              <th scope="col">Title</th>
-              <th scope="col">Category</th>
-              <th scope="col">Status</th>
-              <th scope="col">Updated</th>
-              <th scope="col"><span class="visually-hidden">Actions</span></th>
+              <td class="title">
+                <a [routerLink]="['/articles', article.id]">{{ article.title }}</a>
+              </td>
+              <td>{{ article.category.name }}</td>
+              <td><app-status-badge [status]="article.status" /></td>
+              <td class="date">{{ article.updatedAt | date: 'd MMM y' }}</td>
+              <td>
+                <div class="actions">
+                  <a class="button" [routerLink]="['/articles', article.id, 'edit']">Edit</a>
+                  <button type="button" class="button button--danger" (click)="remove(article)">
+                    Delete
+                  </button>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (article of result.data; track article.id) {
-              <tr>
-                <td class="title">
-                  <a [routerLink]="['/articles', article.id]">{{ article.title }}</a>
-                </td>
-                <td>{{ article.category.name }}</td>
-                <td><app-status-badge [status]="article.status" /></td>
-                <td class="date">{{ article.updatedAt | date: 'd MMM y' }}</td>
-                <td>
-                  <div class="actions">
-                    <a class="button" [routerLink]="['/articles', article.id, 'edit']">Edit</a>
-                    <button type="button" class="button button--danger" (click)="remove(article)">
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+          }
+        </tbody>
+      </app-data-table>
 
       <app-pagination
         [page]="result.page"
