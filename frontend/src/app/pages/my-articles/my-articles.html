@@ -1,4 +1,70 @@
-<section class="page">
-  <h1>My articles</h1>
-  <p class="page__lead">Your drafts and published articles.</p>
-</section>
+<div class="heading">
+  <section class="page">
+    <h1>My articles</h1>
+    <p class="page__lead">Your drafts and published articles.</p>
+  </section>
+  <a class="button button--primary" routerLink="/articles/new">New article</a>
+</div>
+
+@if (deleteError()) {
+  <p class="alert" role="alert">{{ deleteError() }}</p>
+}
+
+<div aria-live="polite">
+  @if (articles.isLoading()) {
+    <p class="status">Loading your articles…</p>
+  } @else if (articles.error()) {
+    <div class="status status--error">
+      <p>Couldn't load your articles. Check your connection and try again.</p>
+      <button type="button" class="button" (click)="articles.reload()">Try again</button>
+    </div>
+  } @else if (articles.value(); as result) {
+    @if (result.total === 0) {
+      <div class="status">
+        <p>You haven't written any articles yet.</p>
+        <a class="button button--primary" routerLink="/articles/new">Write your first article</a>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Updated</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (article of result.data; track article.id) {
+              <tr>
+                <td class="title">
+                  <a [routerLink]="['/articles', article.id]">{{ article.title }}</a>
+                </td>
+                <td>{{ article.category.name }}</td>
+                <td><app-status-badge [status]="article.status" /></td>
+                <td class="date">{{ article.updatedAt | date: 'd MMM y' }}</td>
+                <td>
+                  <div class="actions">
+                    <a class="button" [routerLink]="['/articles', article.id, 'edit']">Edit</a>
+                    <button type="button" class="button button--danger" (click)="remove(article)">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-pagination
+        [page]="result.page"
+        [pageSize]="result.pageSize"
+        [total]="result.total"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  }
+</div>
