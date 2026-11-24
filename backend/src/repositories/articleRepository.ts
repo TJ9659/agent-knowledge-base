@@ -25,6 +25,17 @@ export interface ArticleListFilter {
 
 export type ArticleSearchFilter = ArticleListFilter & { q: string };
 
+// boolean mode with a * on each word, so "ref" also finds "refund"
+// mysql's own operators are stripped first, otherwise "+-()" in a search is a syntax error
+function toPrefixQuery(q: string) {
+  return q
+    .replace(/[+\-@*()~<>"]/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word.length >= 3)
+    .map((word) => `${word}*`)
+    .join(' ');
+}
+
 // findMany ignores the order of ids, so put the rows back in that order
 async function findByIdsInOrder(ids: number[]) {
   const rows = await prisma.article.findMany({ where: { id: { in: ids } }, select: articleSelect });
@@ -41,8 +52,13 @@ export const articleRepository = {
     return { rows, total };
   },
 
-  async search({ q, status, categoryId, skip, take }: ArticleSearchFilter) {
-    const match = Prisma.sql`MATCH(title, content) AGAINST (${q} IN NATURAL LANGUAGE MODE)`;
+  async search({ q, ...filter }: ArticleSearchFilter) {
+    const prefixQuery = toPrefixQuery(q);
+    // nothing searchable left, e.g. only symbols or short words, so show the normal list
+    if (!prefixQuery) return articleRepository.list(filter);
+
+    const { status, categoryId, skip, take } = filter;
+    const match = Prisma.sql`MATCH(title, content) AGAINST (${prefixQuery} IN BOOLEAN MODE)`;
     const where = Prisma.sql`${match}
       ${status ? Prisma.sql`AND status = ${status}` : Prisma.empty}
       ${categoryId ? Prisma.sql`AND categoryId = ${categoryId}` : Prisma.empty}`;
