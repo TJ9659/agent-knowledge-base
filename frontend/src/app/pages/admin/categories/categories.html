@@ -2,3 +2,101 @@
   <h1>Categories</h1>
   <p class="page__lead">Add, rename and remove article categories.</p>
 </section>
+
+<form class="add" (submit)="add($event)">
+  <label for="new-category">New category</label>
+  <div class="add__row">
+    <input
+      id="new-category"
+      type="text"
+      maxlength="60"
+      placeholder="e.g. Roaming"
+      [formControl]="newName"
+      [attr.aria-invalid]="addError() !== null"
+    />
+    <button type="submit" class="button button--primary" [disabled]="saving()">Add category</button>
+  </div>
+  @if (addError()) {
+    <p class="error" role="alert">{{ addError() }}</p>
+  }
+</form>
+
+@if (deleteError()) {
+  <p class="alert" role="alert">{{ deleteError() }}</p>
+}
+
+<div aria-live="polite">
+  @if (categories.isLoading()) {
+    <p class="status">Loading categories…</p>
+  } @else if (categories.error()) {
+    <div class="status status--error">
+      <p>Couldn't load categories. Check your connection and try again.</p>
+      <button type="button" class="button" (click)="categories.reload()">Try again</button>
+    </div>
+  } @else if (categories.value(); as rows) {
+    <app-data-table minWidth="560px">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" class="number">Articles</th>
+          <th scope="col" class="number">Published</th>
+          <th scope="col" class="number">Drafts</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (category of rows; track category.id) {
+          <tr>
+            @if (editingId() === category.id) {
+              <td colspan="5">
+                <form class="rename" (submit)="saveRename($event, category)">
+                  <input
+                    #editInput
+                    type="text"
+                    [attr.aria-label]="'New name for ' + category.name"
+                    maxlength="60"
+                    [formControl]="editName"
+                    [attr.aria-invalid]="editError() !== null"
+                    (keydown.escape)="cancelRename()"
+                  />
+                  <button type="submit" class="button button--primary" [disabled]="saving()">
+                    Save
+                  </button>
+                  <button type="button" class="button" (click)="cancelRename()">Cancel</button>
+                </form>
+                @if (editError()) {
+                  <p class="error" role="alert">{{ editError() }}</p>
+                }
+              </td>
+            } @else {
+              <td class="name">{{ category.name }}</td>
+              <td class="number">{{ category.total }}</td>
+              <td class="number">{{ category.published }}</td>
+              <td class="number">{{ category.drafts }}</td>
+              <td>
+                <div class="actions">
+                  <button type="button" class="button" (click)="startRename(category)">
+                    Rename
+                  </button>
+                  <button
+                    type="button"
+                    class="button button--danger"
+                    [disabled]="category.total > 0"
+                    [title]="category.total > 0 ? 'Move or delete its articles first' : ''"
+                    (click)="remove(category)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </app-data-table>
+    <p class="note">
+      A category that still has articles, drafts included, can't be deleted. Move or delete its
+      articles first.
+    </p>
+  }
+</div>
