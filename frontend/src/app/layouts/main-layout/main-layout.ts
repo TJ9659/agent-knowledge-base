@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role } from '../../core/models/user';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 
 interface NavLink {
   path: string;
@@ -22,7 +23,7 @@ const ROLE_LABELS: Record<Role, string> = { ADMIN: 'Admin', EDITOR: 'Editor', AG
 
 // header for every page after logging in
 @Component({
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ConfirmDialog],
   selector: 'app-main-layout',
   styleUrl: './main-layout.scss',
   templateUrl: './main-layout.html',

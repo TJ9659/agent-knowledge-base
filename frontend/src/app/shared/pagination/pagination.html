@@ -1,0 +1,10 @@
+@if (pageCount() > 1) {
+  <nav class="pagination" aria-label="Pagination">
+    <span class="pagination__summary">Showing {{ from() }}–{{ to() }} of {{ total() }}</span>
+    <div class="pagination__buttons">
+      <button type="button" [disabled]="page() <= 1" (click)="pageChange.emit(page() - 1)">Previous</button>
+      <span class="pagination__page">Page {{ page() }} of {{ pageCount() }}</span>
+      <button type="button" [disabled]="page() >= pageCount()" (click)="pageChange.emit(page() + 1)">Next</button>
+    </div>
+  </nav>
+}

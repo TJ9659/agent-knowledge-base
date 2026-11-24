@@ -1,0 +1,79 @@
+.markdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 72ch;
+  font-size: var(--text-md);
+  line-height: 1.7;
+
+  h1,
+  h2,
+  h3 {
+    margin: var(--space-2) 0 0;
+    line-height: 1.25;
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  pre {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding-left: var(--space-6);
+  }
+
+  li + li {
+    margin-top: var(--space-1);
+  }
+
+  code {
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-strong);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  pre {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-inverse);
+    color: var(--color-on-inverse);
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      background: none;
+      color: inherit;
+    }
+  }
+
+  blockquote {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text-soft);
+  }
+
+  hr {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid var(--color-border);
+  }
+}

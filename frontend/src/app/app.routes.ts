@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/auth-guard';
-import { guestGuard } from './core/auth/guest-guard';
-import { roleGuard } from './core/auth/role-guard';
+import { authGuard } from './core/guards/auth-guard';
+import { guestGuard } from './core/guards/guest-guard';
+import { roleGuard } from './core/guards/role-guard';
 import { AuthLayout } from './layouts/auth-layout/auth-layout';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { Categories } from './pages/admin/categories/categories';

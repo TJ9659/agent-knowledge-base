@@ -1,0 +1,49 @@
+.confirm {
+  width: min(420px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-6);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  color: var(--color-text);
+
+  &::backdrop {
+    background: rgb(28 29 22 / 0.45);
+  }
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-xl);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-soft);
+  }
+}
+
+.confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+
+  button {
+    min-height: var(--control-height);
+    padding: 0 var(--space-5);
+    border: 0;
+    border-radius: var(--radius-pill);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .cancel {
+    background: var(--color-surface-strong);
+    color: var(--color-text);
+  }
+
+  .danger {
+    background: var(--color-danger);
+    color: var(--color-on-primary);
+  }
+}

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, CanActivateFn, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Role } from '../models/user';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { roleGuard } from './role-guard';
 
 describe('roleGuard', () => {

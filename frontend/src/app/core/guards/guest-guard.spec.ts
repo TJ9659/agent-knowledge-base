@@ -1,30 +1,29 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, CanActivateFn, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { authGuard } from './auth-guard';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
+import { guestGuard } from './guest-guard';
 
-describe('authGuard', () => {
+describe('guestGuard', () => {
   const route = {} as ActivatedRouteSnapshot;
-  const state = { url: '/articles/5' } as RouterStateSnapshot;
+  const state = { url: '/login' } as RouterStateSnapshot;
 
   const executeGuard: CanActivateFn = (...guardParameters) =>
-    TestBed.runInInjectionContext(() => authGuard(...guardParameters));
+    TestBed.runInInjectionContext(() => guestGuard(...guardParameters));
 
-  // a fake AuthService that only answers isLoggedIn
   function setup(loggedIn: boolean) {
     TestBed.configureTestingModule({
       providers: [provideRouter([]), { provide: AuthService, useValue: { isLoggedIn: () => loggedIn } }],
     });
   }
 
-  it('lets a logged in user through', () => {
-    setup(true);
+  it('shows the login page to a logged out user', () => {
+    setup(false);
     expect(executeGuard(route, state)).toBe(true);
   });
 
-  it('sends a logged out user to login and remembers where they were going', () => {
-    setup(false);
+  it('sends a logged in user to articles', () => {
+    setup(true);
     const result = executeGuard(route, state) as UrlTree;
-    expect(TestBed.inject(Router).serializeUrl(result)).toBe('/login?returnUrl=%2Farticles%2F5');
+    expect(TestBed.inject(Router).serializeUrl(result)).toBe('/articles');
   });
 });
