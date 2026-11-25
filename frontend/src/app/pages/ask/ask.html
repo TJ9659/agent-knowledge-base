@@ -1,4 +1,79 @@
 <section class="page">
   <h1>Ask the KB</h1>
-  <p class="page__lead">Ask a question and get an answer from published articles.</p>
+  <p class="page__lead">
+    Ask in your own words. The answer comes only from published articles, with links to them.
+  </p>
 </section>
+
+<form class="ask" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label for="question">Your question</label>
+  <textarea
+    id="question"
+    formControlName="question"
+    rows="3"
+    maxlength="500"
+    placeholder="e.g. Customer was charged twice, what do I do?"
+    [attr.aria-invalid]="showError()"
+    aria-describedby="question-hint"
+    (keydown.control.enter)="submit()"
+    (keydown.meta.enter)="submit()"
+  ></textarea>
+  <div class="ask__footer">
+    <p class="hint" id="question-hint">
+      @if (showError()) {
+        <span class="error">Write at least 5 characters.</span>
+      } @else {
+        Ctrl + Enter to ask
+      }
+      · {{ form.controls.question.value.length }}/500
+    </p>
+    <button type="submit" class="button button--primary" [disabled]="loading()">
+      {{ loading() ? 'Asking…' : 'Ask' }}
+    </button>
+  </div>
+</form>
+
+@if (!result() && !loading() && !error()) {
+  <div class="examples">
+    <p>Try one:</p>
+    @for (example of examples; track example) {
+      <button type="button" class="example" (click)="askExample(example)">{{ example }}</button>
+    }
+  </div>
+}
+
+<div aria-live="polite">
+  @if (loading()) {
+    <p class="status">Searching the articles and writing an answer…</p>
+  } @else if (error()) {
+    <div class="status status--error" role="alert">
+      <p>{{ error() }}</p>
+      <a routerLink="/articles">Search the articles instead</a>
+    </div>
+  } @else if (result(); as res) {
+    <article class="answer" [class.answer--none]="res.sources.length === 0">
+      <p class="answer__question">“{{ asked() }}”</p>
+      <app-markdown [content]="res.answer" />
+
+      @if (res.sources.length) {
+        <div class="sources">
+          <h2>From these articles</h2>
+          <ul>
+            @for (source of res.sources; track source.id) {
+              <li>
+                <span class="ref">[{{ source.ref }}]</span>
+                <a [routerLink]="['/articles', source.id]">{{ source.title }}</a>
+              </li>
+            }
+          </ul>
+        </div>
+        <p class="note">AI answers can be wrong. Check the article before telling the customer.</p>
+      } @else {
+        <p class="note">
+          No published article answers this. Try other words, or
+          <a routerLink="/articles">search the articles</a>.
+        </p>
+      }
+    </article>
+  }
+</div>
