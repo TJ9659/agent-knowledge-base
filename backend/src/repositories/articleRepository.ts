@@ -36,6 +36,12 @@ function toPrefixQuery(q: string) {
     .join(' ');
 }
 
+// "charged" becomes "charg", so charg* also finds "charge" and "charging"
+function toStem(word: string) {
+  const stem = word.replace(/(ing|ed|es|s)$/, '');
+  return stem.length >= 4 ? stem : word;
+}
+
 // findMany ignores the order of ids, so put the rows back in that order
 async function findByIdsInOrder(ids: number[]) {
   const rows = await prisma.article.findMany({ where: { id: { in: ids } }, select: articleSelect });
@@ -73,6 +79,20 @@ export const articleRepository = {
 
     const rows = await findByIdsInOrder(hits.map((hit) => hit.id));
     return { rows, total: Number(count?.total ?? 0) };
+  },
+
+  // ask the kb: prefix matches find the articles, plain matches break ties
+  searchPublished(words: string[], limit: number) {
+    const prefixQuery = words.map((word) => `${toStem(word)}*`).join(' ');
+    const plainQuery = words.join(' ');
+    return prisma.$queryRaw<{ id: number; title: string; content: string }[]>`
+      SELECT id, title, content
+      FROM Article
+      WHERE status = 'PUBLISHED'
+        AND MATCH(title, content) AGAINST (${prefixQuery} IN BOOLEAN MODE)
+      ORDER BY MATCH(title, content) AGAINST (${prefixQuery} IN BOOLEAN MODE) DESC,
+        MATCH(title, content) AGAINST (${plainQuery} IN NATURAL LANGUAGE MODE) DESC
+      LIMIT ${limit}`;
   },
 
   findById(id: number) {

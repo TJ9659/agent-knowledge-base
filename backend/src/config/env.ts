@@ -10,6 +10,8 @@ const envSchema = z.object({
   JWT_ACCESS_TTL: z.string().regex(/^\d+[smhd]$/, 'JWT_ACCESS_TTL must look like 15m, 1h or 7d').default('15m'),
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
   GEMINI_API_KEY: z.string().optional(),
+  // comma separated, tried in order
+  GEMINI_MODELS: z.string().default('gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite'),
 });
 
 const parsed = envSchema.safeParse(process.env);
