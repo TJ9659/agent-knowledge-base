@@ -148,14 +148,9 @@ cd backend && npm run typecheck   # strict TypeScript across the API
 
 A Postman collection with 77 requests, error cases included, is in [`backend/postman/`](backend/postman/agent-kb.postman_collection.json). Every feature was also checked in a real browser as each role, on desktop and phone.
 
-## What's next
+## Future improvements
 
-- [ ] Backend tests with Vitest and Supertest (the API is checked by Postman and browser runs today)
-- [ ] `docker compose up` for the whole app, not just the database
-- [ ] A hosted demo
-- [ ] Article version history and an audit log of who changed what
-- [ ] A report of questions Ask the KB couldn't answer, so editors know what to write next
-- [ ] Split long PDFs into several articles, and add a vector index for large knowledge bases
-- [ ] Let a customer-facing chat bot use `/api/ask`, so the same articles power both agents and self-service
+- **Article history**: keep every version and show who changed what.
+- **Unanswered questions report**: list what agents asked that no article covered, so editors know what to write next.
 
 Having trouble running it? See [Troubleshooting](docs/how-it-works.md#troubleshooting).
