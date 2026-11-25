@@ -13,7 +13,7 @@ describe('MainLayout', () => {
   async function setup(role: Role) {
     const user: User = {
       id: 1,
-      name: 'Aisha Rahman',
+      name: 'Admin User',
       email: 'admin@nexora.test',
       role,
       isActive: true,
@@ -63,7 +63,7 @@ describe('MainLayout', () => {
     await setup('ADMIN');
     const page = fixture.nativeElement as HTMLElement;
 
-    expect(page.querySelector('.account__name')?.textContent).toContain('Aisha Rahman');
+    expect(page.querySelector('.account__name')?.textContent).toContain('Admin User');
     expect(page.querySelector('.account__name')?.textContent).toContain('Admin');
 
     page.querySelector<HTMLButtonElement>('.account button')?.click();

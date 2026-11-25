@@ -5,6 +5,7 @@ import type { CategoryName } from './categories.js';
 
 const DANIEL = 'editor@nexora.test';
 const PRIYA = 'editor2@nexora.test';
+const ADMIN = 'admin@nexora.test';
 
 interface SeedArticle {
   title: string;
@@ -412,6 +413,68 @@ export const articles: SeedArticle[] = [
 
 ## Escalate if
 - The customer says they were mis-sold the plan (transfer to Retention).`,
+  },
+  {
+    title: 'Renewing or buying a data plan',
+    category: 'Plans & Orders',
+    authorEmail: DANIEL,
+    status: 'PUBLISHED',
+    content: `# Renewing or buying a data plan
+
+**When to use:** the customer has run out of data, their data plan has expired, or they want to buy extra data before the month ends.
+
+## Steps
+1. Verify the caller (see *Verifying a caller's identity*).
+2. Open Plans > Data usage and check:
+- How much data is left and when it resets.
+- Whether auto-renew is **on** or **off**.
+3. **Renew the monthly plan early:**
+- Click **Renew now**. The new quota starts **immediately**, and any data left over is lost.
+- The renewal price is charged to the next bill.
+4. **Buy a data add-on** (keeps the current plan):
+- Open Plans > Add-ons and choose a pass:
+- 5 GB for 7 days: RM 10
+- 15 GB for 30 days: RM 25
+- Unlimited for 24 hours: RM 5
+- Add-ons are used **before** the main plan's data.
+5. If the customer keeps running out, suggest a bigger plan (see *Upgrading or downgrading a plan*).
+6. Confirm the purchase and read out the price and the expiry date.
+
+## What to tell the customer
+- The new data is ready within **5 minutes**. If it doesn't work, turn mobile data off and on again.
+- They'll get an SMS when the data is added and when 80% of it is used.
+- Add-on data **can't be refunded** once any of it has been used.
+
+## Escalate if
+- The purchase was charged but no data was added after 30 minutes.
+- The customer was charged for an auto-renewal they say they turned off.`,
+  },
+  {
+    title: 'Handling roaming questions',
+    category: 'Billing & Payments',
+    authorEmail: ADMIN,
+    status: 'PUBLISHED',
+    content: `# Handling roaming questions
+
+**When to use:** the customer has questions or issues regarding overseas roaming.
+
+## Steps
+1. Check Plans > Roaming in the agent console.
+2. If it shows Off, turn it on for the customer.
+3. Ask the customer to switch on Data Roaming in their phone settings and restart the phone.
+4. If it still doesn't connect, have the customer pick a partner network manually from the network list.
+
+## What to tell the customer
+- Tell them we send an SMS when they arrive in a new country with the rates.
+- Tell them we send another SMS when they reach RM 100 of roaming charges, after which data roaming is paused until they reply YES.
+
+## Escalate if
+- Pass the case to the Billing Disputes team if the customer says they were charged roaming fees while they were still in Malaysia, near the border, or if the charges are over RM 500.
+
+## Cost and Passes
+- Postpaid customers can add a Roam Pass: RM 15 a day for 1 GB in Asia, or RM 25 a day for 1 GB worldwide.
+- Without a pass, data is charged at RM 1 per MB, so it is worth recommending the pass.
+- Prepaid customers need a balance of at least RM 30 before roaming can be turned on.`,
   },
   {
     title: 'eSIM activation guide',

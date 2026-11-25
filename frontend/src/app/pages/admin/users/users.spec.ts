@@ -20,7 +20,7 @@ const userWith = (id: number, name: string, role: User['role'], isActive = true)
   createdAt: '2026-11-23T00:00:00.000Z',
 });
 
-const admin = { ...userWith(1, 'Aisha Rahman', 'ADMIN'), isProtected: true };
+const admin = { ...userWith(1, 'Admin User', 'ADMIN'), isProtected: true };
 const agent = userWith(4, 'Hafiz Ismail', 'AGENT');
 const inactive = userWith(5, 'Mei Ling Wong', 'AGENT', false);
 
@@ -72,10 +72,10 @@ describe('Users', () => {
     const { element } = await open();
 
     expect(element.querySelectorAll('tbody tr').length).toBe(3);
-    expect(rowFor(element, 'Aisha').textContent).toContain('you');
-    expect(rowFor(element, 'Aisha').textContent).toContain('Admin');
+    expect(rowFor(element, 'Admin User').textContent).toContain('you');
+    expect(rowFor(element, 'Admin User').textContent).toContain('Admin');
     expect(rowFor(element, 'Hafiz').textContent).toContain('Agent');
-    expect(buttonIn(rowFor(element, 'Aisha'), 'Deactivate').disabled).toBe(true);
+    expect(buttonIn(rowFor(element, 'Admin User'), 'Deactivate').disabled).toBe(true);
     expect(rowFor(element, 'Mei Ling').textContent).toContain('Deactivated');
   });
 
@@ -197,7 +197,7 @@ describe('Users', () => {
 
   it('locks the system admin: only the name can change', async () => {
     const { page, element, settle } = await open();
-    const row = rowFor(element, 'Aisha');
+    const row = rowFor(element, 'Admin User');
 
     expect(row.textContent).toContain('System admin');
     expect(buttonIn(row, 'Deactivate').disabled).toBe(true);
@@ -210,10 +210,10 @@ describe('Users', () => {
       'Only its name can be changed',
     );
 
-    page.editForm.controls.name.setValue('Aisha R.');
+    page.editForm.controls.name.setValue('Admin U.');
     buttonIn(element.querySelector('tr.is-editing')!, 'Save').click();
     await settle();
-    expect(userService.update).toHaveBeenCalledWith(1, { name: 'Aisha R.' });
+    expect(userService.update).toHaveBeenCalledWith(1, { name: 'Admin U.' });
   });
 
   it('changes an email, trimmed and lowercased', async () => {
