@@ -19,3 +19,13 @@ export interface ArticleInput {
   categoryId: number;
   status: ArticleStatus;
 }
+
+// the boxes gemini filled in from a pdf, nothing is saved until the editor clicks save
+export interface ImportedArticle {
+  title: string;
+  whenToUse: string;
+  steps: string;
+  customer: string;
+  escalate: string;
+  more: string;
+}

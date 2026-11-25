@@ -34,7 +34,7 @@ const saved: Article = {
 };
 
 describe('ArticleForm', () => {
-  const articleService = { get: vi.fn(), create: vi.fn(), update: vi.fn() };
+  const articleService = { get: vi.fn(), create: vi.fn(), update: vi.fn(), importPdf: vi.fn() };
   let canEdit = true;
 
   async function open(url: string) {
@@ -69,7 +69,17 @@ describe('ArticleForm', () => {
     articleService.get.mockReset().mockReturnValue(of(saved));
     articleService.create.mockReset().mockReturnValue(of({ ...saved, id: 21 }));
     articleService.update.mockReset().mockReturnValue(of(saved));
+    articleService.importPdf.mockReset();
   });
+
+  function choosePdf(element: HTMLElement, file: File) {
+    const input = element.querySelector<HTMLInputElement>('input[type="file"]')!;
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    input.dispatchEvent(new Event('change'));
+  }
+
+  const pdf = (bytes = 10) =>
+    new File([new Uint8Array(bytes)], 'roaming-faq.pdf', { type: 'application/pdf' });
 
   it('shows what is missing and does not save an empty article', async () => {
     const { harness, element } = await open('/articles/new');
@@ -178,5 +188,71 @@ describe('ArticleForm', () => {
 
     expect(element.querySelector('.preview__title')?.textContent).toBe('Verifying a caller');
     expect(element.querySelector('.callout h2')?.textContent).toBe('What to tell the customer');
+  });
+
+  it('fills the boxes from an imported pdf, without saving', async () => {
+    articleService.importPdf.mockReturnValue(
+      of({
+        title: 'Handling roaming questions',
+        whenToUse: 'the customer has roaming questions',
+        steps: '1. Check Plans > Roaming.',
+        customer: '- We send an SMS with the rates.',
+        escalate: '',
+        more: '## Cost\n- RM 15 a day.',
+      }),
+    );
+    const { harness, form, element } = await open('/articles/new');
+
+    choosePdf(element, pdf());
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(articleService.importPdf).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'roaming-faq.pdf' }),
+    );
+    expect(form.form.controls.title.value).toBe('Handling roaming questions');
+    expect(form.form.controls.steps.value).toBe('1. Check Plans > Roaming.');
+    expect(form.form.controls.status.value).toBe('DRAFT');
+    expect(element.querySelector('.notice')?.textContent).toContain(
+      'Filled in from roaming-faq.pdf',
+    );
+    expect(articleService.create).not.toHaveBeenCalled();
+  });
+
+  it('shows why an import failed', async () => {
+    articleService.importPdf.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { message: "Couldn't find a procedure in this PDF." },
+          }),
+      ),
+    );
+    const { harness, element } = await open('/articles/new');
+
+    choosePdf(element, pdf());
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      "Couldn't find a procedure",
+    );
+  });
+
+  it('refuses a pdf over 5 MB without uploading it', async () => {
+    const { harness, element } = await open('/articles/new');
+
+    choosePdf(element, pdf(6 * 1024 * 1024));
+    harness.detectChanges();
+
+    expect(articleService.importPdf).not.toHaveBeenCalled();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain('over 5 MB');
+  });
+
+  it('only offers the import on a new article', async () => {
+    const { element } = await open('/articles/9/edit');
+
+    expect(element.querySelector('.import')).toBeNull();
   });
 });

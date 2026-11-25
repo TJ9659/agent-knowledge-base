@@ -13,6 +13,8 @@ import { ArticleBody } from '../../shared/article-body/article-body';
 
 type FieldName = 'title' | 'categoryId' | 'whenToUse' | 'steps';
 
+const MAX_PDF_BYTES = 5 * 1024 * 1024;
+
 // the server's message, plus each field's reason when validation fails
 function errorMessage(err: HttpErrorResponse) {
   if (err.status === 0) return "Can't reach the server. Check your connection and try again.";
@@ -58,6 +60,9 @@ export class ArticleForm {
   protected readonly loadError = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly saveError = signal<string | null>(null);
+  protected readonly importing = signal(false);
+  protected readonly importError = signal<string | null>(null);
+  protected readonly importedFrom = signal<string | null>(null);
 
   // the preview is built from the same boxes the save uses, so it matches the real page
   private readonly values = toSignal(
@@ -102,6 +107,33 @@ export class ArticleForm {
       next: (article) => void this.router.navigate(['/articles', article.id]),
       error: (err: HttpErrorResponse) => this.saveError.set(errorMessage(err)),
     });
+  }
+
+  // gemini fills the boxes from the pdf, the editor still checks them and picks a category before saving
+  protected importPdf(input: HTMLInputElement) {
+    const file = input.files?.[0];
+    // cleared so picking the same file again still triggers a change
+    input.value = '';
+    if (!file) return;
+    if (file.size > MAX_PDF_BYTES) {
+      this.importError.set('The PDF is over 5 MB.');
+      return;
+    }
+
+    this.importing.set(true);
+    this.importError.set(null);
+    this.importedFrom.set(null);
+    this.articleService
+      .importPdf(file)
+      .pipe(finalize(() => this.importing.set(false)))
+      .subscribe({
+        next: (fields) => {
+          this.form.patchValue(fields);
+          this.tab.set('write');
+          this.importedFrom.set(file.name);
+        },
+        error: (err: HttpErrorResponse) => this.importError.set(errorMessage(err)),
+      });
   }
 
   // fills the boxes from the saved markdown, someone else's article is refused before showing the form

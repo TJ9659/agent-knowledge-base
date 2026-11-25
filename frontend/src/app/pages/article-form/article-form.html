@@ -9,6 +9,40 @@
   </p>
 </section>
 
+@if (!id) {
+  <div class="import">
+    <div>
+      <p class="import__title">Already have it in a PDF?</p>
+      <p class="hint">
+        The AI reads it and fills in the boxes below. You check everything before saving.
+      </p>
+    </div>
+    <label class="button" [class.is-busy]="importing()">
+      {{ importing() ? 'Reading the PDF…' : 'Import from PDF' }}
+      <input
+        #pdfInput
+        type="file"
+        accept="application/pdf"
+        class="visually-hidden"
+        [disabled]="importing()"
+        (change)="importPdf(pdfInput)"
+      />
+    </label>
+  </div>
+  @if (importing()) {
+    <p class="status" role="status">Reading the PDF. This can take up to 30 seconds.</p>
+  }
+  @if (importError()) {
+    <p class="alert" role="alert">{{ importError() }}</p>
+  }
+  @if (importedFrom()) {
+    <p class="notice" role="status">
+      Filled in from {{ importedFrom() }}. Check every box and choose a category. It's saved as a
+      draft until you publish it.
+    </p>
+  }
+}
+
 @if (loading()) {
   <p class="status">Loading article…</p>
 } @else if (loadError()) {

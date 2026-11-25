@@ -1,6 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
-import { Article, ArticleInput, ArticleListItem, ArticleStatus } from '../models/article';
+import {
+  Article,
+  ArticleInput,
+  ArticleListItem,
+  ArticleStatus,
+  ImportedArticle,
+} from '../models/article';
 import { Paginated } from '../models/paginated';
 
 export interface ArticleQuery {
@@ -13,7 +19,9 @@ export interface ArticleQuery {
 
 // drops empty filters so the url only has what was asked for
 function toParams(query: object) {
-  return Object.fromEntries(Object.entries(query).filter(([, value]) => value !== undefined && value !== ''));
+  return Object.fromEntries(
+    Object.entries(query).filter(([, value]) => value !== undefined && value !== ''),
+  );
 }
 
 @Service()
@@ -39,6 +47,12 @@ export class ArticleService {
 
   update(id: number, changes: Partial<ArticleInput>) {
     return this.http.put<Article>(`${this.api}/${id}`, changes);
+  }
+
+  importPdf(file: File) {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<ImportedArticle>(`${this.api}/import`, body);
   }
 
   delete(id: number) {

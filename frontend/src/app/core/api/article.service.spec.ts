@@ -8,7 +8,9 @@ describe('ArticleService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(ArticleService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -39,8 +41,20 @@ describe('ArticleService', () => {
     service.mine(2).subscribe();
 
     expect(httpMock.expectOne({ method: 'GET', url: '/api/articles/5' })).toBeTruthy();
-    expect(httpMock.expectOne({ method: 'PUT', url: '/api/articles/5' }).request.body).toEqual({ title: 'New' });
+    expect(httpMock.expectOne({ method: 'PUT', url: '/api/articles/5' }).request.body).toEqual({
+      title: 'New',
+    });
     expect(httpMock.expectOne({ method: 'DELETE', url: '/api/articles/5' })).toBeTruthy();
     expect(httpMock.expectOne({ method: 'GET', url: '/api/articles/mine?page=2' })).toBeTruthy();
+  });
+
+  it('uploads the pdf as form data', () => {
+    const file = new File(['%PDF'], 'sop.pdf', { type: 'application/pdf' });
+    service.importPdf(file).subscribe();
+
+    const req = httpMock.expectOne({ method: 'POST', url: '/api/articles/import' });
+    expect(req.request.body).toBeInstanceOf(FormData);
+    expect((req.request.body as FormData).get('file')).toBe(file);
+    req.flush({ title: '', whenToUse: '', steps: '', customer: '', escalate: '', more: '' });
   });
 });
