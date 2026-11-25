@@ -1,7 +1,8 @@
 <section class="page">
   <h1>Ask the KB</h1>
   <p class="page__lead">
-    Ask in your own words. The answer comes only from published articles, with links to them.
+    Ask in your own words. Answers come from published articles, with links to them. Anything
+    else is clearly marked as general advice.
   </p>
 </section>
 
@@ -51,9 +52,12 @@
       <a routerLink="/articles">Search the articles instead</a>
     </div>
   } @else if (result(); as res) {
-    <article class="answer" [class.answer--none]="res.sources.length === 0">
+    <article class="answer" [class.answer--none]="!res.sources.length && !res.general">
       <p class="answer__question">“{{ asked() }}”</p>
-      <app-markdown [content]="res.answer" />
+
+      @if (res.answer) {
+        <app-markdown [content]="res.answer" />
+      }
 
       @if (res.sources.length) {
         <div class="sources">
@@ -67,7 +71,21 @@
             }
           </ul>
         </div>
-        <p class="note">AI answers can be wrong. Check the article before telling the customer.</p>
+      }
+
+      @if (res.general) {
+        <section class="general">
+          <h2>General advice, not from an article</h2>
+          <p class="general__note">
+            Based on common telecom scenarios, not on our articles. Check with a supervisor before
+            promising anything to the customer.
+          </p>
+          <app-markdown [content]="res.general" />
+        </section>
+      }
+
+      @if (res.sources.length || res.general) {
+        <p class="note">AI answers can be wrong. Check before telling the customer.</p>
       } @else {
         <p class="note">
           No published article answers this. Try other words, or

@@ -7,5 +7,6 @@ export interface AskSource {
 
 export interface AskAnswer {
   answer: string;
+  general: string;
   sources: AskSource[];
 }

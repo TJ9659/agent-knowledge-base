@@ -42,6 +42,7 @@ describe('Ask', () => {
     expect(req.request.body).toEqual({ question: 'Customer was charged twice' });
     req.flush({
       answer: '1. Verify the caller. [1]',
+      general: '',
       sources: [{ ref: 1, id: 62, title: 'Handling a double charge' }],
     });
     await fixture.whenStable();
@@ -54,11 +55,27 @@ describe('Ask', () => {
 
   it('marks an answer with no sources', async () => {
     ask('What is the weather today?');
-    httpMock.expectOne('/api/ask').flush({ answer: 'No article covers this.', sources: [] });
+    httpMock
+      .expectOne('/api/ask')
+      .flush({ answer: 'No article covers this.', general: '', sources: [] });
     await fixture.whenStable();
 
     expect(page.querySelector('.answer--none')).not.toBeNull();
     expect(page.textContent).toContain('No published article answers this.');
+  });
+
+  it('labels general advice that is not from an article', async () => {
+    ask('customer phone keeps dropping calls');
+    httpMock
+      .expectOne('/api/ask')
+      .flush({ answer: '', general: '1. Restart the phone.', sources: [] });
+    await fixture.whenStable();
+
+    const general = page.querySelector('.general');
+    expect(general?.querySelector('h2')?.textContent).toBe('General advice, not from an article');
+    expect(general?.textContent).toContain('Restart the phone.');
+    expect(page.querySelector('.answer--none')).toBeNull();
+    expect(page.querySelector('.sources')).toBeNull();
   });
 
   it('shows the server message when the ai is unavailable', async () => {
@@ -79,6 +96,6 @@ describe('Ask', () => {
 
     const req = httpMock.expectOne('/api/ask');
     expect(req.request.body.question).toBe('Customer was charged twice, what do I do?');
-    req.flush({ answer: 'ok', sources: [] });
+    req.flush({ answer: 'ok', general: '', sources: [] });
   });
 });
