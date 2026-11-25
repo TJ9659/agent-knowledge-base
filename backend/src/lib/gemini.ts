@@ -8,7 +8,10 @@ const client = env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: env.GEMINI_API_KEY
 const MODELS = env.GEMINI_MODELS.split(',')
   .map((model) => model.trim())
   .filter(Boolean);
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 5_000;
+// a model that just failed is skipped for a minute, so the next questions don't wait on it again
+const COOLDOWN_MS = 60_000;
+const failedAt = new Map<string, number>();
 
 // "this model can't answer right now", so another model might
 // 400 is not here: a bad key or bad request fails the same way on every model
@@ -30,6 +33,16 @@ function shouldTryNext(err: unknown) {
   return true;
 }
 
+function isCoolingDown(model: string) {
+  const time = failedAt.get(model);
+  return time !== undefined && Date.now() - time < COOLDOWN_MS;
+}
+
+// models that failed recently go last instead of first, so they still get a chance if nothing else works
+function modelsInOrder() {
+  return [...MODELS.filter((model) => !isCoolingDown(model)), ...MODELS.filter(isCoolingDown)];
+}
+
 function describe(err: unknown) {
   if (err instanceof Error && err.name === 'AbortError') return `no answer within ${TIMEOUT_MS / 1000}s`;
   if (err instanceof ApiError) return `${err.status} ${err.message.slice(0, 120)}`;
@@ -40,17 +53,19 @@ function describe(err: unknown) {
 export async function generateText({ prompt, instructions, temperature = 0.2 }: GenerateInput) {
   if (!client) return null;
 
-  for (const model of MODELS) {
+  for (const model of modelsInOrder()) {
     try {
       const response = await client.models.generateContent({
         model,
         contents: prompt,
         config: { systemInstruction: instructions, temperature, abortSignal: AbortSignal.timeout(TIMEOUT_MS) },
       });
+      failedAt.delete(model);
       return response.text?.trim() ?? '';
     } catch (err) {
       console.warn(`gemini ${model} failed: ${describe(err)}`);
       if (!shouldTryNext(err)) break;
+      failedAt.set(model, Date.now());
     }
   }
   return null;
