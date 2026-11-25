@@ -17,3 +17,13 @@ export const askLimiter = rateLimit({
   legacyHeaders: false,
   message: { status: 429, message: 'Too many questions, wait a minute and try again' },
 });
+
+// reading a pdf costs more than a question, so fewer are allowed
+export const importLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 5,
+  keyGenerator: (req) => String(req.user?.id),
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { status: 429, message: 'Too many imports, wait a minute and try again' },
+});

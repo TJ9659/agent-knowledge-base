@@ -5,7 +5,9 @@ import {
   type UpdateArticleInput,
 } from '../schemas/article.schemas.js';
 import { idParamSchema, paginationQuerySchema } from '../schemas/common.js';
+import { articleImportService } from '../services/articleImportService.js';
 import { articleService } from '../services/articleService.js';
+import { HttpError } from '../utils/HttpError.js';
 
 export const articleController = {
   async list(req: Request, res: Response) {
@@ -34,5 +36,10 @@ export const articleController = {
     const { id } = idParamSchema.parse(req.params);
     await articleService.remove(req.user!, id);
     res.status(204).end();
+  },
+
+  async importPdf(req: Request, res: Response) {
+    if (!req.file) throw HttpError.badRequest('Choose a PDF file to import');
+    res.json(await articleImportService.fromPdf(req.file.buffer));
   },
 };

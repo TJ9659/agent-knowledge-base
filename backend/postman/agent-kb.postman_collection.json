@@ -2414,6 +2414,89 @@
               ]
             }
           }
+        },
+        {
+          "name": "Import a PDF into the form",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 200 with a GEMINI_API_KEY set, 503 without one",
+                  "pm.test('fields, or AI unavailable', () => pm.expect(pm.response.code).to.be.oneOf([200, 503]));",
+                  "if (pm.response.code === 200) pm.test('has the form fields', () => pm.expect(pm.response.json()).to.have.all.keys('title', 'whenToUse', 'steps', 'customer', 'escalate', 'more'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles",
+                "import"
+              ]
+            },
+            "description": "In the Body tab, choose a PDF for the \"file\" field before sending."
+          }
+        },
+        {
+          "name": "Import without a file (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/articles/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "articles",
+                "import"
+              ]
+            },
+            "description": ""
+          }
         }
       ]
     },

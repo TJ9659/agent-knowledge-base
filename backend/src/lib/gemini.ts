@@ -1,4 +1,4 @@
-import { ApiError, GoogleGenAI } from '@google/genai';
+import { ApiError, GoogleGenAI, type ContentListUnion, type GenerateContentConfig } from '@google/genai';
 import { env } from '../config/env.js';
 
 // null when no key is set, so the ai features can say they are unavailable instead of crashing
@@ -9,6 +9,8 @@ const MODELS = env.GEMINI_MODELS.split(',')
   .map((model) => model.trim())
   .filter(Boolean);
 const TIMEOUT_MS = 5_000;
+// reading a whole pdf takes longer than answering a question
+const PDF_TIMEOUT_MS = 30_000;
 const EMBEDDING_DIMENSIONS = 768;
 // a model that just failed is skipped for a minute, so the next questions don't wait on it again
 const COOLDOWN_MS = 60_000;
@@ -22,6 +24,13 @@ interface GenerateInput {
   prompt: string;
   instructions: string;
   temperature?: number;
+}
+
+interface ReadPdfInput {
+  pdf: Buffer;
+  instructions: string;
+  // the json shape the answer must follow, gemini sticks to it so the reply never needs cutting apart
+  schema: object;
 }
 
 export function isGeminiEnabled() {
@@ -45,21 +54,21 @@ function modelsInOrder() {
 }
 
 function describe(err: unknown) {
-  if (err instanceof Error && err.name === 'AbortError') return `no answer within ${TIMEOUT_MS / 1000}s`;
+  if (err instanceof Error && err.name === 'AbortError') return 'timed out';
   if (err instanceof ApiError) return `${err.status} ${err.message.slice(0, 120)}`;
   return err instanceof Error ? `${err.name}: ${err.message}` : String(err);
 }
 
-// returns the text from the first model that answers, or null when none of them could
-export async function generateText({ prompt, instructions, temperature = 0.2 }: GenerateInput) {
+// tries each model in turn, returns the first answer's text or null when none of them could answer
+async function firstAnswer(contents: ContentListUnion, config: GenerateContentConfig, timeoutMs: number) {
   if (!client) return null;
 
   for (const model of modelsInOrder()) {
     try {
       const response = await client.models.generateContent({
         model,
-        contents: prompt,
-        config: { systemInstruction: instructions, temperature, abortSignal: AbortSignal.timeout(TIMEOUT_MS) },
+        contents,
+        config: { ...config, abortSignal: AbortSignal.timeout(timeoutMs) },
       });
       failedAt.delete(model);
       return response.text?.trim() ?? '';
@@ -70,6 +79,25 @@ export async function generateText({ prompt, instructions, temperature = 0.2 }: 
     }
   }
   return null;
+}
+
+export function generateText({ prompt, instructions, temperature = 0.2 }: GenerateInput) {
+  return firstAnswer(prompt, { systemInstruction: instructions, temperature }, TIMEOUT_MS);
+}
+
+// gemini reads the pdf itself, scanned pages included, and answers in the given json shape
+export function readPdf({ pdf, instructions, schema }: ReadPdfInput) {
+  const contents = [
+    { inlineData: { mimeType: 'application/pdf', data: pdf.toString('base64') } },
+    { text: 'Turn this document into a knowledge base article.' },
+  ];
+  const config = {
+    systemInstruction: instructions,
+    temperature: 0.1,
+    responseMimeType: 'application/json',
+    responseJsonSchema: schema,
+  };
+  return firstAnswer(contents, config, PDF_TIMEOUT_MS);
 }
 
 // the meaning vector of a text, or null when gemini can't make one right now
