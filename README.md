@@ -142,11 +142,13 @@ The demo company, **Nexora Telecom**, is made up. So are all the names, prices a
 ## Testing
 
 ```bash
+cd backend && npm test            # 71 tests: unit + API integration tests against MySQL (Vitest + Supertest)
 cd frontend && npm test           # 113 unit tests (Vitest)
-cd backend && npm run typecheck   # strict TypeScript across the API
 ```
 
-A Postman collection with 77 requests, error cases included, is in [`backend/postman/`](backend/postman/agent-kb.postman_collection.json). Every feature was also checked in a real browser as each role, on desktop and phone.
+The backend integration tests send real requests through the real middleware to a separate `kb_test` database, so your demo data is never touched. Gemini is faked in tests, so they're free and give the same result every run. They cover login and token rotation, every permission rule, drafts staying hidden, the 409 rules, the protected admin, search ranking, and how Ask the KB and PDF import handle each kind of AI reply.
+
+Every feature was also checked in a real browser as each role, on desktop and phone.
 
 ## Future improvements
 

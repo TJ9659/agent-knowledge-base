@@ -32,7 +32,7 @@ The password is checked with **argon2**. On success the API returns a **15-minut
 | Edit or delete an article | | own only | any |
 | Manage categories and users | | | Yes |
 
-The rules are enforced by the **API**. The app only hides buttons you can't use, so calling the API directly (Postman, curl) doesn't get around them.
+The rules are enforced by the **API**. The app only hides buttons you can't use, so calling the API directly (with curl, for example) doesn't get around them.
 
 ### Search
 
@@ -100,16 +100,25 @@ All routes start with `/api`. Everything except login, refresh, logout and healt
 | `DELETE` | `/users/:id` | admin | Deactivate (users are never hard-deleted) |
 | `POST` | `/ask` | signed in | Ask the KB (10 per minute) |
 
-A **Postman collection** with 77 requests, including the error cases (400, 401, 403, 404, 409), is in [`backend/postman/`](../backend/postman/agent-kb.postman_collection.json). Run a folder's login request first; it saves the token for the rest.
+Every rule in this table, and each error response, is covered by the backend integration tests in [`backend/tests/integration/`](../backend/tests/integration/).
 
 ## Testing
 
 ```bash
+cd backend && npm test            # 71 tests (Vitest + Supertest)
 cd frontend && npm test           # 113 unit tests (Vitest)
-cd backend && npm run typecheck   # strict TypeScript across the API
 ```
 
-On top of the unit tests, every feature was checked end to end in a real browser as each role, on desktop and phone width, plus a run with no AI key to make sure everything else still works.
+| Backend tests | What they check |
+| --- | --- |
+| **Unit** (`tests/unit/`) | Pure functions: cosine similarity, merging rankings, snippets, signing and verifying tokens |
+| **Integration** (`tests/integration/`) | Real HTTP requests through the real middleware to a real MySQL database |
+
+The integration tests run against a separate **`kb_test`** database. Before the run it's dropped, recreated and migrated, and each test file reseeds it, so every file starts from the same data. The setup refuses to reset any database whose name doesn't end in `_test`, so the demo data in `kb` is never touched.
+
+**Gemini is faked** with `vi.mock` in the AI tests: each test decides what the "model" replies (a cited answer, general advice, `OFF_TOPIC`, broken JSON, every model failing), and checks how our code handles it. That keeps the tests free, fast and identical every run. A second file runs with no key at all, the way someone without one would.
+
+On top of the automated tests, every feature was checked end to end in a real browser as each role, on desktop and phone width, plus a run with no AI key to make sure everything else still works.
 
 ## Project structure
 
@@ -117,7 +126,7 @@ On top of the unit tests, every feature was checked end to end in a real browser
 agent-knowledge-base/
 ├── backend/
 │   ├── prisma/              schema, migrations, seed data
-│   ├── postman/             API collection
+│   ├── tests/               unit and integration tests (Vitest + Supertest)
 │   └── src/
 │       ├── routes/          URLs, and which checks run on each
 │       ├── middleware/      auth, roles, validation, rate limits, uploads, errors
@@ -153,4 +162,5 @@ A few choices worth explaining:
 - **Port 3307 is in use.** Change the left side of `"3307:3306"` in `docker-compose.yml` and the port in `DATABASE_URL`.
 - **"Property … does not exist" in VS Code after changing the schema.** Run `npx prisma generate`, then *TypeScript: Restart TS Server*. `npm run typecheck` is the source of truth.
 - **Ask the KB says the AI isn't responding.** Free Gemini models have daily limits. The API tries the models in `GEMINI_MODELS` in order, so add another one or try again later.
+- **Backend tests fail with "access denied" for `kb_test`.** Your MySQL volume was created before the test database was added. Run `docker exec kb-mysql mysql -uroot -proot -e "GRANT ALL ON kb_test.* TO 'kb'@'%'"` once (or `docker compose down -v` to start fresh, which also wipes the demo data).
 - **Logged out after reseeding.** Seeding clears all sessions. Just sign in again.
