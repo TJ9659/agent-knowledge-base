@@ -1,5 +1,7 @@
 import { prisma } from '../src/lib/prisma.js';
 import { buildArticle } from '../src/factories/articleFactory.js';
+import { isGeminiEnabled } from '../src/lib/gemini.js';
+import { articleService } from '../src/services/articleService.js';
 import { buildUser } from '../src/factories/userFactory.js';
 import { articles } from './seed-data/articles.js';
 import { categories } from './seed-data/categories.js';
@@ -38,6 +40,14 @@ async function main() {
     `Seeded ${users.length} users, ${categories.length} categories, ${articles.length} articles ` +
       `(${published} published, ${articles.length - published} drafts)`,
   );
+
+  // optional, the seed still works without a key and ask the kb falls back to keyword search
+  if (isGeminiEnabled()) {
+    const { embedded, missing } = await articleService.embedMissing();
+    console.log(`Embedded ${embedded} of ${missing} articles`);
+  } else {
+    console.log('No GEMINI_API_KEY set, skipped embeddings');
+  }
 }
 
 main()

@@ -51,6 +51,8 @@ model Article {
   updatedAt  DateTime      @updatedAt
   category   Category      @relation(fields: [categoryId], references: [id])
   author     User          @relation(fields: [authorId], references: [id])
+  // meaning vector from gemini, ask the kb compares questions with it
+  embedding  Json?
 
   // used by search and ask kb
   @@fulltext([title, content], map: "article_search")

@@ -95,6 +95,26 @@ export const articleRepository = {
       LIMIT ${limit}`;
   },
 
+  listPublishedWithEmbeddings() {
+    return prisma.article.findMany({
+      where: { status: 'PUBLISHED', embedding: { not: Prisma.DbNull } },
+      select: { id: true, title: true, content: true, embedding: true },
+    });
+  },
+
+  findWithoutEmbedding() {
+    return prisma.article.findMany({
+      where: { embedding: { equals: Prisma.DbNull } },
+      select: { id: true, title: true, content: true },
+    });
+  },
+
+  // raw sql so updatedAt stays the same, a new vector is not an edit
+  saveEmbedding(id: number, embedding: number[] | null) {
+    const json = embedding ? JSON.stringify(embedding) : null;
+    return prisma.$executeRaw`UPDATE Article SET embedding = ${json} WHERE id = ${id}`;
+  },
+
   findById(id: number) {
     return prisma.article.findUnique({ where: { id }, select: articleSelect });
   },

@@ -1,6 +1,7 @@
-import { generateText, isGeminiEnabled } from '../lib/gemini.js';
+import { embedText, generateText, isGeminiEnabled } from '../lib/gemini.js';
 import { articleRepository } from '../repositories/articleRepository.js';
 import { HttpError } from '../utils/HttpError.js';
+import { cosineSimilarity, mergeRankings } from '../utils/ranking.js';
 
 const NO_ARTICLE = 'No article covers this. Please escalate to a supervisor.';
 const OFF_TOPIC_MESSAGE = 'I can only help with customer service questions.';
@@ -42,6 +43,19 @@ function toKeywords(question: string) {
   return [...new Set(words.filter((word) => word.length >= 3 && !FILLER_WORDS.has(word)))];
 }
 
+// published articles closest in meaning, empty when the question can't be embedded so keywords still work
+async function findByMeaning(question: string): Promise<FoundArticle[]> {
+  const questionVector = await embedText(question, 'question');
+  if (!questionVector) return [];
+
+  const articles = await articleRepository.listPublishedWithEmbeddings();
+  return articles
+    .map(({ embedding, ...article }) => ({ article, score: cosineSimilarity(questionVector, embedding as number[]) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, ARTICLE_COUNT)
+    .map(({ article }) => article);
+}
+
 function buildPrompt(question: string, articles: FoundArticle[]) {
   const numbered = articles.map(
     (article, i) => `[${i + 1}] ${article.title}\n${article.content.slice(0, MAX_ARTICLE_CHARS)}`,
@@ -74,7 +88,11 @@ export const askService = {
     if (keywords.length === 0) return { answer: NO_ARTICLE, general: '', sources: [] };
 
     // only published articles, so drafts never reach agents through the ai
-    const articles = await articleRepository.searchPublished(keywords, ARTICLE_COUNT);
+    const [byKeyword, byMeaning] = await Promise.all([
+      articleRepository.searchPublished(keywords, ARTICLE_COUNT),
+      findByMeaning(question),
+    ]);
+    const articles = mergeRankings([byKeyword, byMeaning]).slice(0, ARTICLE_COUNT);
 
     const text = await generateText({ prompt: buildPrompt(question, articles), instructions: INSTRUCTIONS });
     if (text === null) {

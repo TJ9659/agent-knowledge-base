@@ -1,3 +1,4 @@
+import { embedText } from '../lib/gemini.js';
 import { articleRepository, type ArticleRecord } from '../repositories/articleRepository.js';
 import { categoryRepository } from '../repositories/categoryRepository.js';
 import type { ArticleListQuery, CreateArticleInput, UpdateArticleInput } from '../schemas/article.schemas.js';
@@ -5,6 +6,12 @@ import type { PaginationQuery } from '../schemas/common.js';
 import type { AuthUser } from '../types/express.js';
 import { HttpError } from '../utils/HttpError.js';
 import { toSnippet } from '../utils/snippet.js';
+
+// ask the kb searches by this vector, a gemini failure leaves it null and never stops the save
+async function refreshEmbedding(article: { id: number; title: string; content: string }) {
+  const embedding = await embedText(`${article.title}\n\n${article.content}`, 'article');
+  await articleRepository.saveEmbedding(article.id, embedding);
+}
 
 // list pages get a short snippet instead of the full content
 function toListItem({ content, ...article }: ArticleRecord) {
@@ -63,14 +70,32 @@ export const articleService = {
 
   async create(user: AuthUser, input: CreateArticleInput) {
     await assertCategoryExists(input.categoryId);
-    return articleRepository.create({ ...input, authorId: user.id });
+    const article = await articleRepository.create({ ...input, authorId: user.id });
+    await refreshEmbedding(article);
+    return article;
   },
 
   async update(user: AuthUser, id: number, input: UpdateArticleInput) {
     const article = await getVisibleOrThrow(user, id);
     assertCanModify(user, article);
     if (input.categoryId) await assertCategoryExists(input.categoryId);
-    return articleRepository.update(id, input);
+    const updated = await articleRepository.update(id, input);
+    // only a new title or content changes the meaning
+    if (input.title !== undefined || input.content !== undefined) await refreshEmbedding(updated);
+    return updated;
+  },
+
+  // for the seed and npm run db:embed, fills in articles saved while gemini was down or before embeddings existed
+  async embedMissing() {
+    const missing = await articleRepository.findWithoutEmbedding();
+    let embedded = 0;
+    for (const article of missing) {
+      const embedding = await embedText(`${article.title}\n\n${article.content}`, 'article');
+      if (!embedding) continue;
+      await articleRepository.saveEmbedding(article.id, embedding);
+      embedded++;
+    }
+    return { embedded, missing: missing.length };
   },
 
   async remove(user: AuthUser, id: number) {

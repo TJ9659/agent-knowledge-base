@@ -9,6 +9,7 @@ const MODELS = env.GEMINI_MODELS.split(',')
   .map((model) => model.trim())
   .filter(Boolean);
 const TIMEOUT_MS = 5_000;
+const EMBEDDING_DIMENSIONS = 768;
 // a model that just failed is skipped for a minute, so the next questions don't wait on it again
 const COOLDOWN_MS = 60_000;
 const failedAt = new Map<string, number>();
@@ -69,4 +70,26 @@ export async function generateText({ prompt, instructions, temperature = 0.2 }: 
     }
   }
   return null;
+}
+
+// the meaning vector of a text, or null when gemini can't make one right now
+// articles and questions use different task types, gemini tunes each side for search
+export async function embedText(text: string, purpose: 'article' | 'question') {
+  if (!client) return null;
+
+  try {
+    const response = await client.models.embedContent({
+      model: env.GEMINI_EMBEDDING_MODEL,
+      contents: text,
+      config: {
+        taskType: purpose === 'article' ? 'RETRIEVAL_DOCUMENT' : 'RETRIEVAL_QUERY',
+        outputDimensionality: EMBEDDING_DIMENSIONS,
+        abortSignal: AbortSignal.timeout(TIMEOUT_MS),
+      },
+    });
+    return response.embeddings?.[0]?.values ?? null;
+  } catch (err) {
+    console.warn(`gemini embedding failed: ${describe(err)}`);
+    return null;
+  }
 }

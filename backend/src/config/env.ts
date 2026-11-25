@@ -11,6 +11,7 @@ const envSchema = z.object({
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
   GEMINI_API_KEY: z.string().optional(),
   // comma separated, tried in order
+  GEMINI_EMBEDDING_MODEL: z.string().default('gemini-embedding-001'),
   GEMINI_MODELS: z.string().default('gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite'),
 });
 
