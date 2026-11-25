@@ -32,7 +32,7 @@ function toPrefixQuery(q: string) {
     .replace(/[+\-@*()~<>"]/g, ' ')
     .split(/\s+/)
     .filter((word) => word.length >= 3)
-    .map((word) => `${word}*`)
+    .map((word) => `${toStem(word.toLowerCase())}*`)
     .join(' ');
 }
 
@@ -65,6 +65,10 @@ export const articleRepository = {
 
     const { status, categoryId, skip, take } = filter;
     const match = Prisma.sql`MATCH(title, content) AGAINST (${prefixQuery} IN BOOLEAN MODE)`;
+    // + makes every word required, so articles with all the words come first
+    const allWords = Prisma.sql`MATCH(title, content) AGAINST (${prefixQuery.replace(/(\S+)/g, '+$1')} IN BOOLEAN MODE) > 0`;
+    // prefix scores favour rare forms like "refunded", the plain match puts the exact word first
+    const plainMatch = Prisma.sql`MATCH(title, content) AGAINST (${q} IN NATURAL LANGUAGE MODE)`;
     const where = Prisma.sql`${match}
       ${status ? Prisma.sql`AND status = ${status}` : Prisma.empty}
       ${categoryId ? Prisma.sql`AND categoryId = ${categoryId}` : Prisma.empty}`;
@@ -72,7 +76,7 @@ export const articleRepository = {
     const [hits, [count]] = await prisma.$transaction([
       prisma.$queryRaw<{ id: number }[]>`
         SELECT id FROM Article WHERE ${where}
-        ORDER BY ${match} DESC, updatedAt DESC
+        ORDER BY ${allWords} DESC, ${plainMatch} DESC, ${match} DESC, updatedAt DESC
         LIMIT ${take} OFFSET ${skip}`,
       prisma.$queryRaw<{ total: bigint }[]>`SELECT COUNT(*) AS total FROM Article WHERE ${where}`,
     ]);
