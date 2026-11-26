@@ -16,6 +16,7 @@ Editors write the articles. Admins look after users and categories.
 ![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?logo=mysql&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-RAG-8E75B2?logo=googlegemini&logoColor=white)
+[![Mozilla Observatory](https://img.shields.io/badge/Mozilla_Observatory-A%2B-2E7D32?logo=mozilla&logoColor=white)](https://developer.mozilla.org/en-US/observatory/analyze?host=nexora-kb.duckdns.org)
 
 **[Live demo](https://nexora-kb.duckdns.org)** · [Quick start](#quick-start) · [Features](#features) · [Screenshots](#screenshots) · [Highlights](#highlights) · [Deployment](#deployment) · [How it works](docs/how-it-works.md)
 
@@ -146,6 +147,7 @@ The demo company, **Nexora Telecom**, is made up. So are all the names, prices a
 - **Ask the KB you can trust.** Keyword and meaning search merged, answers cited to their articles, general advice clearly labelled, and drafts never sent to the AI.
 - **Keeps working when the AI doesn't.** Several Gemini models are tried in turn with a 5-second limit, and without a key the rest of the app runs normally.
 - **PDF import with a human in the loop.** Gemini fills the form from any procedure PDF, even a scanned one, and nothing is saved until an editor checks it.
+- **Secure by default in production.** HTTPS everywhere, a strict Content-Security-Policy and the standard security headers, rated **A+ (110/100)** on Mozilla's HTTP Observatory ([see the scan](#deployment)).
 
 **Want the details?** [How it all works](docs/how-it-works.md) covers login, permissions, search, Ask the KB, PDF import, the full API and the design decisions.
 
