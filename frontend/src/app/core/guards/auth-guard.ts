@@ -7,5 +7,6 @@ export const authGuard: CanActivateFn = (_route, state) => {
     return true;
   }
 
-  return inject(Router).createUrlTree(['/login'], {queryParams: {returnUrl: state.url}}); // after logging back in, will return u to the route prev
+  const returnUrl = state.url === '/articles' ? undefined : state.url;
+  return inject(Router).createUrlTree(['/login'], {queryParams: {returnUrl}});
 };

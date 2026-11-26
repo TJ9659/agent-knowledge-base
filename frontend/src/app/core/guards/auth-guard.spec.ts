@@ -27,4 +27,10 @@ describe('authGuard', () => {
     const result = executeGuard(route, state) as UrlTree;
     expect(TestBed.inject(Router).serializeUrl(result)).toBe('/login?returnUrl=%2Farticles%2F5');
   });
+
+  it('leaves out returnUrl for the home page, since login goes there anyway', () => {
+    setup(false);
+    const result = executeGuard(route, { url: '/articles' } as RouterStateSnapshot) as UrlTree;
+    expect(TestBed.inject(Router).serializeUrl(result)).toBe('/login');
+  });
 });

@@ -106,7 +106,7 @@ Every rule in this table, and each error response, is covered by the backend int
 
 ```bash
 cd backend && npm test            # 71 tests (Vitest + Supertest)
-cd frontend && npm test           # 117 unit tests (Vitest)
+cd frontend && npm test           # 118 unit tests (Vitest)
 ```
 
 | Backend tests | What they check |

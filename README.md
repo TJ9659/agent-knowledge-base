@@ -155,7 +155,7 @@ The demo company, **Nexora Telecom**, is made up. So are all the names, prices a
 
 ```bash
 cd backend && npm test            # 71 tests: unit + API integration tests against MySQL (Vitest + Supertest)
-cd frontend && npm test           # 117 unit tests (Vitest)
+cd frontend && npm test           # 118 unit tests (Vitest)
 ```
 
 The backend integration tests send real requests through the real middleware to a separate `kb_test` database, so your demo data is never touched. Gemini is faked in tests, so they're free and give the same result every run. They cover login and token rotation, every permission rule, drafts staying hidden, the 409 rules, the protected admin, search ranking, and how Ask the KB and PDF import handle each kind of AI reply.
