@@ -6,20 +6,13 @@ import { finalize } from 'rxjs';
 import { AskService } from '../../core/api/ask.service';
 import { AskAnswer } from '../../core/models/ask';
 import { Markdown } from '../../shared/markdown/markdown';
+import { errorMessage } from '../../core/api/error-message';
 
 const EXAMPLES = [
   'Customer was charged twice, what do I do?',
   'Caller forgot their app password',
   'Customer wants to cancel their contract',
 ];
-
-// the server sends friendly messages for 429 and 503, these cover when there is none
-function errorMessage(err: HttpErrorResponse) {
-  if (err.status === 0) {
-    return "Can't reach the server. Check your connection and try again.";
-  }
-  return err.error?.message ?? 'Something went wrong. Please try again.';
-}
 
 @Component({
   imports: [ReactiveFormsModule, RouterLink, Markdown],

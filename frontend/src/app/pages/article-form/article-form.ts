@@ -10,18 +10,15 @@ import { toFields, toMarkdown } from '../../core/articles/article-content';
 import { AuthService } from '../../core/auth/auth.service';
 import { ArticleStatus } from '../../core/models/article';
 import { ArticleBody } from '../../shared/article-body/article-body';
+import { errorMessage } from '../../core/api/error-message';
 
 type FieldName = 'title' | 'categoryId' | 'whenToUse' | 'steps';
 
-const MAX_PDF_BYTES = 5 * 1024 * 1024;
+// a 403 here only means someone else's article
+const formErrorMessage = (err: HttpErrorResponse) =>
+  err.status === 403 ? 'You can only edit your own articles.' : errorMessage(err);
 
-// the server's message, plus each field's reason when validation fails
-function errorMessage(err: HttpErrorResponse) {
-  if (err.status === 0) return "Can't reach the server. Check your connection and try again.";
-  if (err.status === 403) return 'You can only edit your own articles.';
-  const details: string[] = err.error?.errors?.map((e: { message: string }) => e.message) ?? [];
-  return [err.error?.message ?? 'Something went wrong. Please try again.', ...details].join(' ');
-}
+const MAX_PDF_BYTES = 5 * 1024 * 1024;
 
 // one page for both /articles/new and /articles/:id/edit
 @Component({
@@ -105,7 +102,7 @@ export class ArticleForm {
     this.saveError.set(null);
     request.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: (article) => void this.router.navigate(['/articles', article.id]),
-      error: (err: HttpErrorResponse) => this.saveError.set(errorMessage(err)),
+      error: (err: HttpErrorResponse) => this.saveError.set(formErrorMessage(err)),
     });
   }
 
@@ -132,7 +129,7 @@ export class ArticleForm {
           this.tab.set('write');
           this.importedFrom.set(file.name);
         },
-        error: (err: HttpErrorResponse) => this.importError.set(errorMessage(err)),
+        error: (err: HttpErrorResponse) => this.importError.set(formErrorMessage(err)),
       });
   }
 

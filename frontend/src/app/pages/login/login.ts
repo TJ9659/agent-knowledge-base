@@ -4,14 +4,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
-
-// the server already sends friendly messages, these cover when there is none
-function errorMessage(err: HttpErrorResponse) {
-  if (err.status === 0) {
-    return "Can't reach the server. Check your connection and try again.";
-  }
-  return err.error?.message ?? 'Something went wrong. Please try again.';
-}
+import { errorMessage } from '../../core/api/error-message';
 
 @Component({
   imports: [ReactiveFormsModule],

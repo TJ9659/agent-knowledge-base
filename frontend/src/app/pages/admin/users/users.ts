@@ -10,15 +10,9 @@ import { Role, ROLE_LABELS, User, UserChanges } from '../../../core/models/user'
 import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { DataTable } from '../../../shared/data-table/data-table';
 import { Pagination } from '../../../shared/pagination/pagination';
+import { errorMessage } from '../../../core/api/error-message';
 
 type FieldName = 'name' | 'email' | 'password';
-
-// the server's message, plus each field's reason when validation fails
-function errorMessage(err: HttpErrorResponse) {
-  if (err.status === 0) return "Can't reach the server. Check your connection and try again.";
-  const details: string[] = err.error?.errors?.map((e: { message: string }) => e.message) ?? [];
-  return [err.error?.message ?? 'Something went wrong. Please try again.', ...details].join(' ');
-}
 
 // tells the admin what the change means for that person
 function savedMessage(name: string, changes: UserChanges) {

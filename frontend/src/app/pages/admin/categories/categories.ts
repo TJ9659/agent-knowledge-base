@@ -6,17 +6,12 @@ import { CategoryService } from '../../../core/api/category.service';
 import { CategoryStats } from '../../../core/models/category';
 import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { DataTable } from '../../../shared/data-table/data-table';
+import { errorMessage } from '../../../core/api/error-message';
 
 // same limits as the backend, checked after trimming
 function nameProblem(name: string) {
   const length = name.trim().length;
   return length < 2 || length > 60 ? 'Use 2 to 60 characters.' : null;
-}
-
-// the server explains conflicts itself, e.g. "Category name is already in use"
-function errorMessage(err: HttpErrorResponse) {
-  if (err.status === 0) return "Can't reach the server. Check your connection and try again.";
-  return err.error?.message ?? 'Something went wrong. Please try again.';
 }
 
 // admin only, uses the stats endpoint so drafts are counted too
