@@ -153,7 +153,7 @@ The demo company, **Nexora Telecom**, is made up. So are all the names, prices a
 
 ```bash
 cd backend && npm test            # 71 tests: unit + API integration tests against MySQL (Vitest + Supertest)
-cd frontend && npm test           # 113 unit tests (Vitest)
+cd frontend && npm test           # 117 unit tests (Vitest)
 ```
 
 The backend integration tests send real requests through the real middleware to a separate `kb_test` database, so your demo data is never touched. Gemini is faked in tests, so they're free and give the same result every run. They cover login and token rotation, every permission rule, drafts staying hidden, the 409 rules, the protected admin, search ranking, and how Ask the KB and PDF import handle each kind of AI reply.
@@ -168,6 +168,17 @@ The live demo runs at **https://nexora-kb.duckdns.org**.
 - **Containers:** Docker Compose runs MySQL, a one-off migration container, the Express API, and Caddy.
 - **Web server:** Caddy serves the Angular build, forwards `/api` to the API, and gets the HTTPS certificate automatically.
 - **Domain:** a free DuckDNS subdomain pointing at the Droplet.
+- **Security headers:** HSTS, a strict Content-Security-Policy, frame protection and the other standard headers. The site scores **A+ (110/100)** on [Mozilla's HTTP Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=nexora-kb.duckdns.org).
+
+<p align="center">
+  <img src="docs/screenshots/security-score.png" alt="Mozilla HTTP Observatory scan of nexora-kb.duckdns.org: A+, score 110 out of 100, 12 of 12 tests passed" width="640" />
+</p>
+
+<details>
+<summary><b>Full scan results</b></summary>
+<br />
+<img src="docs/screenshots/security-observatory.png" alt="Mozilla HTTP Observatory test-by-test results for nexora-kb.duckdns.org" width="640" />
+</details>
 
 The app and the API share one address, so the login cookie stays first-party. Updating it is `git pull` and `docker compose -f docker-compose.prod.yml up -d --build`; migrations run on their own.
 
