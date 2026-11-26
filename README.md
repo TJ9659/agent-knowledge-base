@@ -17,7 +17,7 @@ Editors write the articles. Admins look after users and categories.
 ![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-RAG-8E75B2?logo=googlegemini&logoColor=white)
 
-[Quick start](#quick-start) · [Features](#features) · [Screenshots](#screenshots) · [Highlights](#highlights) · [How it works](docs/how-it-works.md)
+**[Live demo](https://nexora-kb.duckdns.org)** · [Quick start](#quick-start) · [Features](#features) · [Screenshots](#screenshots) · [Highlights](#highlights) · [Deployment](#deployment) · [How it works](docs/how-it-works.md)
 
 <br />
 
@@ -93,6 +93,16 @@ Open **http://localhost:4200** and sign in with one of the demo accounts below.
 > **The AI features are optional.** Without a key, everything works except *Ask the KB* and *Import from PDF*, which politely say "AI unavailable".
 > To turn them on, put a free key from [Google AI Studio](https://aistudio.google.com/) in `backend/.env` as `GEMINI_API_KEY`, restart the API, and run `npm run db:embed` once so the existing articles can be searched by meaning.
 
+### Or run the whole app in Docker
+
+```bash
+cp .env.example .env              # fill in the two passwords and JWT_ACCESS_SECRET
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml run --rm migrate npm run db:seed
+```
+
+Then open **http://localhost**. This is the same setup that runs the live demo.
+
 ### Demo accounts
 
 Every account uses the password **`Password123!`**
@@ -150,9 +160,15 @@ The backend integration tests send real requests through the real middleware to 
 
 Every feature was also checked in a real browser as each role, on desktop and phone.
 
-## Future improvements
+## Deployment
 
-- **Article history**: keep every version and show who changed what.
-- **Unanswered questions report**: list what agents asked that no article covered, so editors know what to write next.
+The live demo runs at **https://nexora-kb.duckdns.org**.
+
+- **Server:** a DigitalOcean Droplet (a small Ubuntu VPS).
+- **Containers:** Docker Compose runs MySQL, a one-off migration container, the Express API, and Caddy.
+- **Web server:** Caddy serves the Angular build, forwards `/api` to the API, and gets the HTTPS certificate automatically.
+- **Domain:** a free DuckDNS subdomain pointing at the Droplet.
+
+The app and the API share one address, so the login cookie stays first-party. Updating it is `git pull` and `docker compose -f docker-compose.prod.yml up -d --build`; migrations run on their own.
 
 Having trouble running it? See [Troubleshooting](docs/how-it-works.md#troubleshooting).

@@ -1,0 +1,14 @@
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy backend:3000
+	}
+
+	# unknown paths get index.html so angular's router can handle them
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

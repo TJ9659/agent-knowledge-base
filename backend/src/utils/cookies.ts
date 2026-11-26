@@ -5,11 +5,11 @@ export const REFRESH_COOKIE = 'refresh_token';
 
 const isProd = env.NODE_ENV === 'production';
 
-// sameSite none in prod since frontend and api live on different domains
+// app and api share one origin, so lax works
 const baseOptions: CookieOptions = {
   httpOnly: true,
   secure: isProd,
-  sameSite: isProd ? 'none' : 'lax',
+  sameSite: 'lax',
   path: '/api/auth',
 };
 

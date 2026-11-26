@@ -1,0 +1,65 @@
+name: nexora-kb
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: kb
+      MYSQL_USER: kb
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      # tcp, mysql's first-run temporary server has no networking
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  migrate:
+    build:
+      context: ./backend
+      target: tools
+    environment:
+      DATABASE_URL: mysql://kb:${MYSQL_PASSWORD}@mysql:3306/kb
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql://kb:${MYSQL_PASSWORD}@mysql:3306/kb
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET in .env}
+      CORS_ORIGIN: ${PUBLIC_URL:-http://localhost}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
+  caddy-data:
+  caddy-config:
